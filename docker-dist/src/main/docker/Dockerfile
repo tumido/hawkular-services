@@ -32,16 +32,17 @@ ENV HAWKULAR_BACKEND=cassandra \
     HAWKULAR_AGENT_ENABLE=${agent_enable} \
     CASSANDRA_NODES=myCassandra \
     HAWKULAR_USER=jdoe \
+    HAWKULAR_USE_SSL=false \
     HAWKULAR_METRICS_TTL=${metrics_ttl}
 
-
 USER root
-RUN mkdir -p /opt/data && \
-    chown -R jboss:jboss ${JBOSS_HOME}/{standalone,domain} /opt/data && \
-    chmod -R ugo+rw ${JBOSS_HOME}/{standalone,domain} /opt/data
+RUN yum install --quiet -y openssl && \
+    rm -rf /var/cache/yum && \
+    mkdir -p /opt/data && \
+    chown -R jboss:jboss ${JBOSS_HOME}/{standalone,domain} /opt/data $JAVA_HOME/jre/lib/security/cacerts && \
+    chmod -R ugo+rw ${JBOSS_HOME}/{standalone,domain} /opt/data $JAVA_HOME/jre/lib/security/cacerts
 
 VOLUME ["/opt/data"]
 
 USER jboss
 CMD /opt/hawkular/bin/startcmd.sh
-

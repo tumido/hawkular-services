@@ -201,6 +201,21 @@
 
                 <transformationSet>
                   <dir>${project.build.directory}/feature-pack-resources</dir>
+                  <stylesheet>${basedir}/src/main/xsl/configuration/standalone/hawkular-services-subsystems-ssl.xsl</stylesheet>
+                  <includes>
+                    <include>configuration/standalone/hawkular-services-subsystems.xml</include>
+                  </includes>
+                  <outputDir>${project.build.directory}/feature-pack-resources</outputDir>
+                  <fileMappers>
+                    <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
+                      <pattern>^.*$</pattern>
+                      <replacement>configuration/standalone/hawkular-services-subsystems-ssl.xml</replacement>
+                    </fileMapper>
+                  </fileMappers>
+                </transformationSet>
+
+                <transformationSet>
+                  <dir>${project.build.directory}/feature-pack-resources</dir>
                   <stylesheet>${basedir}/src/main/xsl/configuration/standalone/hawkular-services-template.xsl</stylesheet>
                   <!-- without the default user in the default profile -->
                   <parameters>
@@ -221,6 +236,21 @@
                     <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
                       <pattern>^.*$</pattern>
                       <replacement>configuration/standalone/hawkular-services-template.xml</replacement>
+                    </fileMapper>
+                  </fileMappers>
+                </transformationSet>
+
+                <transformationSet>
+                  <dir>${project.build.directory}/feature-pack-resources</dir>
+                  <stylesheet>${basedir}/src/main/xsl/configuration/standalone/hawkular-services-template-ssl.xsl</stylesheet>
+                  <includes>
+                    <include>configuration/standalone/hawkular-services-template.xml</include>
+                  </includes>
+                  <outputDir>${project.build.directory}/feature-pack-resources</outputDir>
+                  <fileMappers>
+                    <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
+                      <pattern>^.*$</pattern>
+                      <replacement>configuration/standalone/hawkular-services-template-ssl.xml</replacement>
                     </fileMapper>
                   </fileMappers>
                 </transformationSet>
@@ -281,6 +311,36 @@
                     <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
                       <pattern>^.*$</pattern>
                       <replacement>subsystem-templates/hawkular-services-undertow.xml</replacement>
+                    </fileMapper>
+                  </fileMappers>
+                </transformationSet>
+
+                <transformationSet>
+                  <dir>${project.build.directory}/feature-pack-resources</dir>
+                  <stylesheet>${basedir}/src/main/xsl/subsystem-templates/hawkular-services-undertow-ssl.xsl</stylesheet>
+                  <includes>
+                    <include>subsystem-templates/hawkular-services-undertow.xml</include>
+                  </includes>
+                  <outputDir>${project.build.directory}/feature-pack-resources</outputDir>
+                  <fileMappers>
+                    <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
+                      <pattern>^.*$</pattern>
+                      <replacement>subsystem-templates/hawkular-services-undertow-ssl.xml</replacement>
+                    </fileMapper>
+                  </fileMappers>
+                </transformationSet>
+
+                <transformationSet>
+                  <dir>${project.build.directory}/feature-pack-resources</dir>
+                  <stylesheet>${basedir}/src/main/xsl/subsystem-templates/hawkular-wildfly-agent-ssl.xsl</stylesheet>
+                  <includes>
+                    <include>subsystem-templates/hawkular-wildfly-agent.xml</include>
+                  </includes>
+                  <outputDir>${project.build.directory}/feature-pack-resources</outputDir>
+                  <fileMappers>
+                    <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
+                      <pattern>^.*$</pattern>
+                      <replacement>subsystem-templates/hawkular-wildfly-agent-ssl.xml</replacement>
                     </fileMapper>
                   </fileMappers>
                 </transformationSet>

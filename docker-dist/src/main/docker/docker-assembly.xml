@@ -63,12 +63,21 @@
       <fileMode>755</fileMode>
     </file>
     <file>
+      <source>src/main/resources/cert_utils.sh</source>
+      <outputDirectory>/opt/hawkular/bin</outputDirectory>
+      <fileMode>755</fileMode>
+    </file>
+    <file>
       <source>src/main/resources/standalone.conf</source>
       <outputDirectory>${docker.jboss_home}/bin</outputDirectory>
       <fileMode>755</fileMode>
     </file>
     <file>
       <source>${project.build.directory}/${project.build.finalName}/standalone/configuration/standalone.xml</source>
+      <outputDirectory>${docker.jboss_home}/standalone/configuration</outputDirectory>
+    </file>
+    <file>
+      <source>${project.build.directory}/${project.build.finalName}/standalone/configuration/standalone-ssl.xml</source>
       <outputDirectory>${docker.jboss_home}/standalone/configuration</outputDirectory>
     </file>
     <file>
