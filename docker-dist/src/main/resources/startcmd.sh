@@ -27,7 +27,7 @@ get_credentials() {
     username=$(cat ${_username_file})
   else
     username=${HAWKULAR_USER:-"$(head /dev/urandom -c 512 | tr -dc A-Z-a-z-0-9 | head -c 16)"}
-    [[ -z ${HAWKULAR_USER} ]] && generated="true"
+    [[ -z ${HAWKULAR_USER} ]] && username_generated="true"
   fi
 
   local _password_file="/client-secrets/hawkular-services.password"
@@ -35,7 +35,7 @@ get_credentials() {
     password=$(cat ${_password_file})
   else
     password=${HAWKULAR_PASSWORD:-"$(head /dev/urandom -c 512 | tr -dc A-Z-a-z-0-9 | head -c 16)"}
-    [[ -z ${HAWKULAR_PASSWORD} ]] && generated="true"
+    [[ -z ${HAWKULAR_PASSWORD} ]] && password_generated="true"
   fi
 }
 
@@ -53,13 +53,13 @@ create_user() {
     # we add the ${username} user
     ${JBOSS_HOME}/bin/add-user.sh -a -u "${username}" -p "${password}" -g read-write,read-only -s
     RT=$?
-    [[ ${generated} != "true" ]] && return 0
+    [[ ${username_generated} != "true" ]] && [[ ${password_generated} != "true" ]] && return 0
     if [[ ${RT} -eq 0 ]]; then
       echo "------------------------------------"
       echo "ATTENTION ATTENTION ATTENTION ATTENTION"
       echo "We automatically created a user for you to access the Hawkular Services:"
-      echo "Username: ${username}"
-      echo "Password: ${password}"
+      [[ ${username_generated} == "true" ]] && echo "Username: ${username}"
+      [[ ${password_generated} == "true" ]] && echo "Password: ${password}"
       echo "------------------------------------"
     else
       echo "------------------------------------"
