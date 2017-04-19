@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Red Hat, Inc. and/or its affiliates
+ * Copyright 2016-2017 Red Hat, Inc. and/or its affiliates
  * and other contributors as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,6 +16,7 @@
  */
 package org.hawkular.rest;
 
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static javax.ws.rs.core.Response.Status.CREATED;
 
 import java.io.IOException;
@@ -34,6 +35,7 @@ import javax.ws.rs.core.UriInfo;
 
 import org.hawkular.inventory.api.paging.Page;
 import org.hawkular.inventory.api.paging.PageContext;
+import org.hawkular.rest.json.ApiError;
 import org.hawkular.rest.json.Link;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -187,5 +189,24 @@ final class ResponseUtil {
 
         // Create a total size header
         builder.header("X-Total-Count", resultList.getTotalSize());
+    }
+
+    public static Response internalError(String message) {
+        return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                .entity(new ApiError(message)).type(APPLICATION_JSON_TYPE).build();
+    }
+
+    public static Response notFound(String message) {
+        return Response.status(Response.Status.NOT_FOUND)
+                .entity(new ApiError(message)).type(APPLICATION_JSON_TYPE).build();
+    }
+
+    public static Response ok(Object entity) {
+        return Response.status(Response.Status.OK).entity(entity).type(APPLICATION_JSON_TYPE).build();
+    }
+
+    public static Response badRequest(String message) {
+        return Response.status(Response.Status.BAD_REQUEST)
+                .entity(new ApiError(message)).type(APPLICATION_JSON_TYPE).build();
     }
 }

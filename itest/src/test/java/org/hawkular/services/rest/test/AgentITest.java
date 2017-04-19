@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Red Hat, Inc. and/or its affiliates
+ * Copyright 2016-2017 Red Hat, Inc. and/or its affiliates
  * and other contributors as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -182,4 +182,40 @@ public class AgentITest extends AbstractTestBase {
                 }, Retry.times(500).delay(1000));
 
     }
+
+    /**
+     * Checks that the local WildFly discovery generated a notification.
+     *
+     * @throws Throwable
+     */
+    @Test(dependsOnMethods = { "agentDiscoverySuccess" })
+    @RunAsClient
+    public void agentNotificationSuccess() throws Throwable {
+        StringBuffer sb = new StringBuffer("/hawkular/alerts/events");
+        sb.append("?");
+        sb.append("tagQuery=miq.event_type%20%3D%20hawkular_event%20AND%20miq.resource_type%20%3D%20MiddlewareServer");
+        final String eventsPath = sb.toString();
+
+        testClient.newRequest()
+                .header("Hawkular-Tenant", testTenantId)
+                .path(eventsPath)
+                .get()
+                .assertWithRetries(testResponse -> {
+                    testResponse
+                            .assertCode(200)
+                            .assertJson(foundEvents -> {
+
+                                log.warnf("Got events [%s]", foundEvents);
+                                Assert.assertTrue(foundEvents.isArray(), String.format(
+                                        "[%s] should have returned a json array, while it returned [%s]",
+                                        testResponse.getRequest(), foundEvents));
+                                Assert.assertTrue(foundEvents.size() == 1, String.format(
+                                        "[%s] should have returned a json array with size == 1, while it returned [%s]",
+                                        testResponse.getRequest(), foundEvents));
+                            });
+
+                }, Retry.times(500).delay(1000));
+
+    }
+
 }

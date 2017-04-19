@@ -47,11 +47,13 @@ public class ListenerUtils {
      */
     public void addEvent(String resourcePathStr, String category, String text, String miqEventType,
             String miqResourceType, String miqMessage) {
-        addEvent(CanonicalPath.fromString(resourcePathStr), category, text, miqEventType, miqResourceType,
+        addEvent(null, false, CanonicalPath.fromString(resourcePathStr), category, text, miqEventType, miqResourceType,
                 miqMessage);
     }
 
     /**
+     * @param eventId if null will be a generated UUID
+     * @param checkExists addEvent only if event with the provided eventId does not already exist
      * @param resourcePathStr resource canonical path
      * @param category the event category
      * @param text the event text
@@ -59,13 +61,21 @@ public class ListenerUtils {
      * @param miqResourceType the MIQ event resource type
      * @param miqMessage optional message for the MIQ event
      */
-    public void addEvent(CanonicalPath resourcePath, String category, String text, String miqEventType,
+    public void addEvent(String eventId, boolean checkExists, CanonicalPath resourcePath, String category, String text,
+            String miqEventType,
             String miqResourceType, String miqMessage) {
         try {
             init();
 
             String tenantId = resourcePath.ids().getTenantId();
-            String eventId = UUID.randomUUID().toString();
+            eventId = (null == eventId || eventId.isEmpty()) ? UUID.randomUUID().toString() : eventId;
+
+            if (checkExists) {
+                if (null != alerts.getEvent(tenantId, eventId, true)) {
+                    return;
+                }
+            }
+
             Event event = new Event(tenantId, eventId, category, text);
             event.addContext("resource_path", resourcePath.toString());
             event.addContext("message", miqMessage);

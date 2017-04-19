@@ -16,7 +16,6 @@
  */
 package org.hawkular.listener.bus;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -74,16 +73,6 @@ public class InventoryEventListener extends InventoryEventMessageListener {
     @javax.annotation.Resource(lookup = "java:global/Hawkular/Inventory")
     Inventory inventory;
 
-    private final ListenerUtils utils = new ListenerUtils();
-
-    // For Server Create/Remove
-    private static final Set<String> SERVER_TYPES = new HashSet<>(Arrays.asList(
-            "Domain Host",
-            "Domain WildFly Server",
-            "Domain WildFly Server Controller",
-            "Host Controller",
-            "WildFly Server"));
-
     // For Cluster Discovery
     private static final String ATTR_GROUP_MEMBERSHIP_VIEW = "Group Membership View";
     private static final String ATTR_NODE_NAME = "Node Name";
@@ -122,8 +111,6 @@ public class InventoryEventListener extends InventoryEventMessageListener {
             type = r.getType().getId();
             boolean handled = false;
 
-            handled |= checkServerEvent(event.getAction(), tenantId, r, type);
-
             handled |= checkClusterEvent(event.getAction(), tenantId, r, type);
 
             if (!handled) {
@@ -136,22 +123,6 @@ public class InventoryEventListener extends InventoryEventMessageListener {
         }
     }
 
-    private boolean checkServerEvent(Enumerated action, String tenantId, Resource r, String type) {
-        switch (action) {
-            case CREATED:
-            case DELETED: {
-                if (SERVER_TYPES.contains(type)) {
-                    String message = ((action == Enumerated.CREATED) ? "Added: " : "Removed: ") + type;
-
-                    utils.addEvent(r.getPath(), "Inventory Change", message, "hawkular_event",
-                            "MiddlewareServer", message);
-                    return true;
-                }
-            }
-            default:
-                return false; // not interesting
-        }
-    }
 
     private boolean checkClusterEvent(Enumerated action, String tenantId, Resource r, String type) {
         switch (action) {
