@@ -50,14 +50,13 @@
     </dependency>
 
     <dependency>
-      <groupId>org.hawkular.services</groupId>
-      <artifactId>hawkular-listener</artifactId>
-      <version>0.36.0.Final-SNAPSHOT</version>
+      <groupId>org.hawkular.commons</groupId>
+      <artifactId>hawkular-cors-jaxrs-filter</artifactId>
     </dependency>
 
     <dependency>
       <groupId>org.hawkular.services</groupId>
-      <artifactId>hawkular-rx</artifactId>
+      <artifactId>hawkular-listener</artifactId>
       <version>0.36.0.Final-SNAPSHOT</version>
     </dependency>
 
@@ -83,26 +82,6 @@
       <scope>provided</scope>
     </dependency>
 
-    <!-- RX
-    <dependency>
-      <groupId>com.netflix.hystrix</groupId>
-      <artifactId>hystrix-request-servlet</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>javax.servlet</groupId>
-          <artifactId>javax.servlet-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-api</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>com.netflix.hystrix</groupId>
-      <artifactId>hystrix-metrics-event-stream</artifactId>
-    </dependency>
--->
     <dependency>
       <groupId>org.jboss.logging</groupId>
       <artifactId>jboss-logging</artifactId>
