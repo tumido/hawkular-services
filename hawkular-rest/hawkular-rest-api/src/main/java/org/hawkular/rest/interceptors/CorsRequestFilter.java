@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Red Hat, Inc. and/or its affiliates
+ * Copyright 2016-2017 Red Hat, Inc. and/or its affiliates
  * and other contributors as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,30 +18,27 @@ package org.hawkular.rest.interceptors;
 
 import java.io.IOException;
 
+import javax.annotation.Priority;
+import javax.inject.Inject;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
 
-/**
- * @author Jirka Kremser
- */
+import org.hawkular.jaxrs.filter.cors.CorsFilters;
 
+/**
+ * @author Joel Takvorian
+ */
 @Provider
 @PreMatching
-public class OptionsRequestFilter implements ContainerRequestFilter {
+@Priority(0)
+public class CorsRequestFilter implements ContainerRequestFilter {
 
-    @Override
-    public void filter(ContainerRequestContext requestContext) throws IOException {
-        //NOT a CORS request
-        if (requestContext.getHeaderString("Origin") == null) {
-            return;
-        }
+    @Inject
+    OriginValidation validator;
 
-        //It is a CORS pre-flight request, there is no route for it, just return 200
-        if (requestContext.getRequest().getMethod().equalsIgnoreCase("OPTIONS")) {
-            requestContext.abortWith(Response.status(Response.Status.OK).build());
-        }
+    @Override public void filter(ContainerRequestContext requestContext) throws IOException {
+        CorsFilters.filterRequest(requestContext, validator.getPredicate());
     }
 }
