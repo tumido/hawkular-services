@@ -17,14 +17,8 @@
 package org.hawkular.rest;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
-import static javax.ws.rs.core.Response.Status.CREATED;
-
-import java.util.Spliterator;
-import java.util.stream.StreamSupport;
 
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
 
 import org.hawkular.rest.json.ApiError;
 
@@ -34,34 +28,6 @@ import org.hawkular.rest.json.ApiError;
  * @since 0.0.1
  */
 final class ResponseUtil {
-
-    /**
-     * This method exists solely to concentrate usage of {@link javax.ws.rs.core.Response#created(java.net.URI)} into
-     * one place until <a href="https://issues.jboss.org/browse/RESTEASY-1162">this JIRA</a> is resolved somehow.
-     *
-     * @param info the UriInfo instance of the current request
-     * @param id   the ID of a newly created entity under the base
-     * @return the response builder with status 201 and location set to the entity with the provided id.
-     */
-    public static Response.ResponseBuilder created(UriInfo info, String id) {
-        return Response.status(CREATED).location(info.getRequestUriBuilder().segment(id).build());
-    }
-
-    /**
-     * Similar to {@link #created(UriInfo, String)} but used when more than 1 entity is created during the request.
-     * <p/>
-     * The provided list of ids is converted to URIs (by merely appending the ids using the
-     * {@link UriBuilder#segment(String...)} method) and put in the response as its entity.
-     *
-     * @param info uri info to help with converting ids to URIs
-     * @param ids  the list of ids of the entities
-     * @return the response builder with status 201 and entity set
-     */
-    public static Response.ResponseBuilder created(UriInfo info, Spliterator<String> ids) {
-        return Response.status(CREATED)
-                .entity(StreamSupport.stream(ids, false).map(
-                        (id) -> info.getRequestUriBuilder().segment(id).build()));
-    }
 
     public static Response internalError(String message) {
         return Response.status(Response.Status.INTERNAL_SERVER_ERROR)

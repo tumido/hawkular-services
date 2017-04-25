@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright 2016 Red Hat, Inc. and/or its affiliates
+    Copyright 2016-2017 Red Hat, Inc. and/or its affiliates
     and other contributors as indicated by the @author tags.
 
     Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,9 +36,6 @@
     <jms-queue name="hawkular/metrics/gauges/new" entries="java:/queue/hawkular/metrics/gauges/new java:jboss/exported/queue/hawkular/metrics/gauges/new"/>
     <jms-queue name="hawkular/metrics/counters/new" entries="java:/queue/hawkular/metrics/counters/new java:jboss/exported/queue/hawkular/metrics/counters/new"/>
     <jms-queue name="hawkular/metrics/availability/new" entries="java:/queue/hawkular/metrics/availability/new java:jboss/exported/queue/hawkular/metrics/availability/new"/>
-
-    <xsl:comment> Inventory </xsl:comment>
-    <jms-topic name="HawkularInventoryChanges" entries="java:/topic/HawkularInventoryChanges"/>
 
     <xsl:comment> Hawkular/Glue </xsl:comment>
     <jms-topic name="HawkularCommandEvent" entries="java:/queue/HawkularCommandEvent"/>

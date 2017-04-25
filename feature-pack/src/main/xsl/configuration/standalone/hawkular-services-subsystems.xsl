@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright 2016 Red Hat, Inc. and/or its affiliates
+    Copyright 2016-2017 Red Hat, Inc. and/or its affiliates
     and other contributors as indicated by the @author tags.
 
     Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,11 +38,6 @@
   <!-- Replace hawkular-nest-logging.xml with hawkular-services-logging.xml -->
   <xsl:template match="/*[local-name()='config']/*[local-name()='subsystems']/*[local-name()='subsystem' and text()='hawkular-nest-logging.xml']">
     <subsystem>hawkular-services-logging.xml</subsystem>
-  </xsl:template>
-
-  <!-- Replace datasources.xml with hawkular-inventory-datasources.xml -->
-  <xsl:template match="/*[local-name()='config']/*[local-name()='subsystems']/*[local-name()='subsystem' and text()='datasources.xml']">
-    <subsystem>hawkular-inventory-datasources.xml</subsystem>
   </xsl:template>
 
   <!-- Replace infinispan.xml with hawkular-services-infinispan.xml -->

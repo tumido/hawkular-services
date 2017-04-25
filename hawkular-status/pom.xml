@@ -30,7 +30,7 @@
   <version>0.36.0.Final-SNAPSHOT</version>
   <packaging>war</packaging>
 
-  <name>Hawkular Status Status Reporter: Main /status for Hawkular Services</name>
+  <name>Hawkular Status Reporter: Main /status for Hawkular Services</name>
 
   <dependencies>
     <dependency>

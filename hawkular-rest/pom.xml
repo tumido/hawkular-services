@@ -51,24 +51,6 @@
       </dependency>
 
       <dependency>
-        <groupId>org.hawkular.inventory</groupId>
-        <artifactId>hawkular-inventory-bus-api</artifactId>
-        <version>${version.org.hawkular.inventory}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.hawkular.inventory</groupId>
-        <artifactId>hawkular-inventory-security-permissive</artifactId>
-        <version>${version.org.hawkular.inventory}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.hawkular.inventory</groupId>
-        <artifactId>hawkular-inventory-security-spi</artifactId>
-        <version>${version.org.hawkular.inventory}</version>
-      </dependency>
-
-      <dependency>
         <groupId>org.hawkular.alerts</groupId>
         <artifactId>hawkular-alerts-api</artifactId>
         <version>${version.org.hawkular.alerts}</version>

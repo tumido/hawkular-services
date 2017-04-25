@@ -16,14 +16,15 @@
  */
 package org.hawkular.services.rest.test;
 
+import java.util.List;
+
 import org.hawkular.cmdgw.ws.test.EchoCommandITest;
+import org.hawkular.inventory.api.model.ExtendedInventoryStructure;
 import org.hawkular.services.rest.test.TestClient.Retry;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.logging.Logger;
 import org.testng.Assert;
 import org.testng.annotations.Test;
-
-import com.fasterxml.jackson.databind.JsonNode;
 
 import okhttp3.HttpUrl;
 
@@ -48,7 +49,7 @@ public class AgentITest extends AbstractTestBase {
      *
      * @throws Throwable
      */
-    @Test(dependsOnGroups = { EchoCommandITest.GROUP, InventoryITest.GROUP, AlertingITest.GROUP, MetricsITest.GROUP })
+    @Test(dependsOnGroups = { EchoCommandITest.GROUP, AlertingITest.GROUP, MetricsITest.GROUP })
     @RunAsClient
     public void agentCollectingMetrics() throws Throwable {
         final String wfHeapMetricId = "MI~R~[" + testFeedId + "/Local~~]~MT~WildFly Memory Metrics~Heap Used";
@@ -91,7 +92,7 @@ public class AgentITest extends AbstractTestBase {
      *
      * @throws Throwable
      */
-    @Test(dependsOnGroups = { EchoCommandITest.GROUP, InventoryITest.GROUP, AlertingITest.GROUP, MetricsITest.GROUP })
+    @Test(dependsOnGroups = { EchoCommandITest.GROUP, AlertingITest.GROUP, MetricsITest.GROUP })
     @RunAsClient
     public void agentSendingPings() throws Throwable {
         final String pingMetricId = "hawkular-feed-availability-" + testFeedId;
@@ -125,26 +126,24 @@ public class AgentITest extends AbstractTestBase {
     }
 
     /**
-     * Checks that at least he local WildFly and operating system were inserted to the Inventory by Hawkular Agent.
+     * Checks that at least the local WildFly and operating system were inserted to Inventory by Hawkular Agent.
      * <p>
-     * A note about {@link Test#dependsOnGroups()}: we actually depend only on {@link InventoryITest#GROUP} here but we
-     * want these tests to run at the very end of the suite so that it takes less to wait for the resources to appear in
-     * Inventory.
+     * A note about {@link Test#dependsOnGroups()}: we want these tests to run at the very end of the suite so that it
+     * takes less to wait for the resources to appear in Inventory.
      *
      * @throws Throwable
      */
-    @Test(dependsOnGroups = { InventoryITest.GROUP, EchoCommandITest.GROUP, AlertingITest.GROUP, MetricsITest.GROUP })
+    @Test(dependsOnGroups = { EchoCommandITest.GROUP, AlertingITest.GROUP, MetricsITest.GROUP })
     @RunAsClient
     public void agentDiscoverySuccess() throws Throwable {
-        final String resourcesPath = InventoryITest.traversalPath + "/f;" + testFeedId + "/type=r";
-        final String wfServerCanonicalPath = "/t;itest-rest-tenant/f;itest-feed/r;Local~~";
-        final String osCanonicalPath =
-                "/t;itest-rest-tenant/f;itest-feed/r;platform~%2FOPERATING_SYSTEM%3Ditest-feed_OperatingSystem";
+        final String resourcesPath = "/hawkular/metrics/strings/raw/query";
+        final String wfServerId = "Local~~";
+        final String osId = "platform~/OPERATING_SYSTEM=itest-feed_OperatingSystem";
 
         testClient.newRequest()
                 .header("Hawkular-Tenant", testTenantId)
                 .path(resourcesPath)
-                .get()
+                .postJson("{fromEarliest:true, order:\"DESC\", tags:\"module:inventory,feed:itest-feed,type:r\"}")
                 .assertWithRetries(testResponse -> {
                     testResponse
                             .assertCode(200)
@@ -158,21 +157,23 @@ public class AgentITest extends AbstractTestBase {
                                         "[%s] should have returned a json array with size >= 2, while it returned [%s]",
                                         testResponse.getRequest(), foundResources));
 
-                                JsonNode wf = testResponse.asJsonStream()
-                                        .filter(resource -> wfServerCanonicalPath
-                                                .equals(resource.get("path").asText()))
+                                List<ExtendedInventoryStructure> structures
+                                        = InventoryHelper.extractStructuresFromResponse(foundResources);
+
+                                ExtendedInventoryStructure wf = structures.stream()
+                                        .filter(ext -> ext.getStructure().getRoot().getId().equals(wfServerId))
                                         .findFirst().orElseThrow(() -> new AssertionError(
                                                 String.format(
-                                                        "GET [%s] should return an array containing a WF server resource with path [%s]",
-                                                        resourcesPath, wfServerCanonicalPath)));
+                                                        "GET [%s] should return an array containing a WF server resource with id [%s]",
+                                                        resourcesPath, wfServerId)));
                                 log.tracef("Found a WF server resource [%s]", wf);
 
-                                JsonNode os = testResponse.asJsonStream()
-                                        .filter(resource -> osCanonicalPath.equals(resource.get("path").asText()))
+                                ExtendedInventoryStructure os = structures.stream()
+                                        .filter(ext -> ext.getStructure().getRoot().getId().equals(osId))
                                         .findFirst().orElseThrow(() -> new AssertionError(
                                                 String.format(
-                                                        "GET [%s] should return an array containing an OS resource with path [%s]",
-                                                        resourcesPath, osCanonicalPath)));
+                                                        "GET [%s] should return an array containing an OS resource with id [%s]",
+                                                        resourcesPath, osId)));
                                 log.tracef("Found an OS resource [%s]", os);
 
                                 /* test passed: both the WF server and the OS are there in the list of resources */
