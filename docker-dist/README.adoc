@@ -1,5 +1,10 @@
 = Hawkular Services Docker Distribution
 
+ifdef::env-github[]
+image:https://images.microbadger.com/badges/version/hawkular/hawkular-services.svg["Latest Released Version",link="https://microbadger.com/images/hawkular/hawkular-services"]
+image:https://images.microbadger.com/badges/image/hawkular/hawkular-services.svg["Layers and Size Info",link="https://microbadger.com/images/hawkular/hawkular-services"]
+endif::[]
+
 This module contains the sources to build a Docker container with Hawkular Services.
 
 == Cassandra
