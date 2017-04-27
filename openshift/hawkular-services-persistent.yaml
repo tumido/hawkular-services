@@ -146,7 +146,7 @@ objects:
           name: hawkular-services
           volumeMounts:
           - name: h-services-data
-            mountPath: /opt/data
+            mountPath: /var/opt/hawkular
           ports:
           - containerPort: 8080
           - containerPort: 9990

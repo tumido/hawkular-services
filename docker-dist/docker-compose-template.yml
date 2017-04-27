@@ -32,7 +32,7 @@ hawkular:
     - "8443:8443"
     - "8787:8787"
   volumes:
-    - /tmp/opt/hawkular/server:/opt/data
+    - /tmp/opt/hawkular/server:/var/opt/hawkular
   links:
     - myCassandra
   environment:

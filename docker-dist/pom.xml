@@ -137,7 +137,7 @@
                 <namingStrategy>none</namingStrategy>
                 <volumes>
                   <bind>
-                    <volume>/tmp/opt/hawkular/server:/opt/data</volume>
+                    <volume>/tmp/opt/hawkular/server:/var/opt/hawkular</volume>
                   </bind>
                 </volumes>
                 <env>

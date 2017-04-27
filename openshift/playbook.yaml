@@ -64,7 +64,7 @@
         state: present
 
     - name: "Find out what oc client version we are running (major version)"
-      shell: "oc version | grep oc | cut -f2 -d' ' | head -c 2 | tail -c 1"
+      shell: "oc version | grep oc | cut -f2 -d' ' | cut -c2"
       register: oc_major_version
 
     - name: "Find out what oc client version we are running (minor version)"

@@ -75,8 +75,8 @@ create_user() {
 run_hawkular_services() {
   ${JBOSS_HOME}/bin/standalone.sh -b 0.0.0.0 \
          -bmanagement 0.0.0.0 \
-         -Djboss.server.data.dir=${HAWKULAR_DATA:-/opt/data}/data \
-         -Djboss.server.log.dir=${HAWKULAR_DATA:-/opt/data}/log \
+         -Djboss.server.data.dir=${HAWKULAR_DATA:-/var/opt/hawkular}/data \
+         -Djboss.server.log.dir=${HAWKULAR_DATA:-/var/opt/hawkular}/log \
          -Dactivemq.artemis.client.global.thread.pool.max.size=${HAWKULAR_JMS_THREAD_POOL:-30} \
          -Dhawkular.agent.enabled=${HAWKULAR_AGENT_ENABLE} \
          -Dhawkular.rest.user=${username} \
