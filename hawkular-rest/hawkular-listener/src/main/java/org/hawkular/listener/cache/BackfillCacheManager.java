@@ -39,7 +39,6 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.naming.InitialContext;
 
-import org.hawkular.inventory.api.Inventory;
 import org.hawkular.inventory.api.model.MetricDataType;
 import org.hawkular.metrics.core.service.MetricsService;
 import org.hawkular.metrics.model.AvailabilityType;
@@ -142,7 +141,6 @@ public class BackfillCacheManager implements BackfillCache {
     private static final String MONITORING_TYPE_KEY = "hawkular-services.monitoring-type";
     private static final String MONITORING_TYPE_VALUE_REMOTE = "remote";
 
-    private static final String INVENTORY_SERVICE = "java:global/Hawkular/Inventory";
     private static final String METRICS_SERVICE = "java:global/Hawkular/Metrics";
 
     static {
@@ -206,7 +204,6 @@ public class BackfillCacheManager implements BackfillCache {
     private Map<CacheKey, ScheduledFuture<?>> jobMap = new ConcurrentHashMap<>();
 
     // Lazy init these when we actually need to do a backfill
-    private Inventory inventory;
     private MetricsService metricsService;
 
     /**
@@ -341,8 +338,7 @@ public class BackfillCacheManager implements BackfillCache {
     @Lock(LockType.READ)
     public void forceBackfill(String feedId) {
         if (!initServices()) {
-            log.warnf("Could not perform backfill, not all services are available. Inventory=%s, Metrics=%s",
-                    inventory, metricsService);
+            log.warnf("Could not perform backfill, not all services are available. Metrics=%s", metricsService);
             return;
         }
 
@@ -382,14 +378,11 @@ public class BackfillCacheManager implements BackfillCache {
         backfillCache.put(key, value);
 
         // Fetch from hwkinventory all avail metrics for the feed on this tenant
-        Observable<org.hawkular.inventory.api.model.Metric.Blueprint> metricsObs
-                = InventoryHelper.listMetricTypes(metricsService, key.getTenantId(), key.getFeedId())
-                    .filter(mt -> {
-                        Object prop = mt.getProperties().get("__metric_data_type");
-                        return MetricDataType.AVAILABILITY.getDisplayName().equals(prop);
-                    })
-                    .flatMap(mt -> InventoryHelper.listMetricsForType(metricsService, key.getTenantId(),
-                            key.getFeedId(), mt));
+        Observable<org.hawkular.inventory.api.model.Metric.Blueprint> metricsObs = InventoryHelper
+                .listMetricTypes(metricsService, key.getTenantId(), key.getFeedId())
+                .filter(mt -> MetricDataType.AVAILABILITY == mt.getMetricDataType())
+                .flatMap(mt -> InventoryHelper.listMetricsForType(metricsService, key.getTenantId(), key.getFeedId(),
+                        mt));
 
         long now = System.currentTimeMillis();
 
@@ -407,7 +400,8 @@ public class BackfillCacheManager implements BackfillCache {
             String monitoringType = (String) invMetric.getProperties().get(MONITORING_TYPE_KEY);
             List<DataPoint<AvailabilityType>> availList = MONITORING_TYPE_VALUE_REMOTE
                     .equalsIgnoreCase(monitoringType) ? unknown : down;
-            return new Metric<>(metricId, availList);
+            Metric<AvailabilityType> backfillAvail = new Metric<>(metricId, availList);
+            return backfillAvail;
         });
 
         // Set DOWN avail for the feed/tenant itself
@@ -431,7 +425,7 @@ public class BackfillCacheManager implements BackfillCache {
 
             @Override
             public void onError(Throwable arg0) {
-                log.warnf("Failed to backfill Feed %s: %s", key, arg0);
+                log.warnf(arg0, "Failed to backfill Feed %s", key);
             }
 
             @Override
@@ -444,9 +438,6 @@ public class BackfillCacheManager implements BackfillCache {
         try {
             InitialContext ctx = new InitialContext();
 
-            if (inventory == null) {
-                inventory = (Inventory) ctx.lookup(INVENTORY_SERVICE);
-            }
             if (metricsService == null) {
                 metricsService = (MetricsService) ctx.lookup(METRICS_SERVICE);
             }
@@ -454,7 +445,7 @@ public class BackfillCacheManager implements BackfillCache {
             log.errorf("Failed to access JNDI Services: %s", e.getMessage());
         }
 
-        return (!(null == inventory || null == metricsService));
+        return (null != metricsService);
     }
 
     private void cancelJob(CacheKey key) {
@@ -498,8 +489,7 @@ public class BackfillCacheManager implements BackfillCache {
             // backfill situation
             log.infof("Feed %s has not reported for %d ms and will be backfilled.", key, quietPeriodMs);
             if (!initServices()) {
-                log.warnf("Could not perform backfill, not all services are available. Inventory=%s, Metrics=%s",
-                        inventory, metricsService);
+                log.warnf("Could not perform backfill, not all services are available. Metrics=%s", metricsService);
                 return;
             }
             doBackfill(key, value);

@@ -20,6 +20,8 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Base64;
+import java.util.Base64.Decoder;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -86,7 +88,7 @@ public final class InventoryHelper {
                             .filter(Objects::nonNull)
                             .map(inv -> inv.getStructure().get(RelativePath.fromString("")))
                             .filter(bp -> bp instanceof MetricType.Blueprint)
-                            .map(bp -> (MetricType.Blueprint)bp);
+                            .map(bp -> (MetricType.Blueprint) bp);
                 });
     }
 
@@ -128,11 +130,12 @@ public final class InventoryHelper {
         }
         try {
             DataPoint<String> masterNode = datapoints.get(0);
+            Decoder decoder = Base64.getDecoder();
             final byte[] all;
             if (masterNode.getTags().containsKey("chunks")) {
                 int nbChunks = Integer.parseInt(masterNode.getTags().get("chunks"));
                 int totalSize = Integer.parseInt(masterNode.getTags().get("size"));
-                byte[] master = masterNode.getValue().getBytes();
+                byte[] master = decoder.decode(masterNode.getValue().getBytes());
                 if (master.length == 0) {
                     return null;
                 }
@@ -142,13 +145,13 @@ public final class InventoryHelper {
                 pos += master.length;
                 for (int i = 1; i < nbChunks; i++) {
                     DataPoint<String> slaveNode = datapoints.get(i);
-                    byte[] slave = slaveNode.getValue().getBytes();
+                    byte[] slave = decoder.decode(slaveNode.getValue().getBytes());
                     System.arraycopy(slave, 0, all, pos, slave.length);
                     pos += slave.length;
                 }
             } else {
                 // Not chunked
-                all = masterNode.getValue().getBytes();
+                all = decoder.decode(masterNode.getValue().getBytes());
             }
             String decompressed = decompress(all);
             return MAPPER.readValue(decompressed, ExtendedInventoryStructure.class);
