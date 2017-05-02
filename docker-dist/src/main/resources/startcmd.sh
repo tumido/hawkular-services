@@ -82,6 +82,8 @@ run_hawkular_services() {
          -Dhawkular.rest.user=${username} \
          -Dhawkular.rest.password=${password} \
          -Dhawkular.metrics.default-ttl=${HAWKULAR_METRICS_TTL:-14} \
+         -Dhawkular.agent.machine.id=${HOSTNAME} -Djboss.server.name=${HOSTNAME} -Dhawkular.agent.in-container=true \
+         -Dhawkular.rest.feedId=${HOSTNAME} -Dhawkular.agent.immutable=true \
          "$@"
 }
 

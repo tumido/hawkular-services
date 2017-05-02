@@ -381,34 +381,27 @@
           </plugin>
 
           <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>xml-maven-plugin</artifactId>
+            <groupId>org.codehaus.gmaven</groupId>
+            <artifactId>groovy-maven-plugin</artifactId>
+            <dependencies>
+              <dependency>
+                <groupId>org.yaml</groupId>
+                <artifactId>snakeyaml</artifactId>
+                <version>${version.org.yaml.snakeyaml}</version>
+              </dependency>
+            </dependencies>
             <executions>
               <execution>
-                <id>transform-xmls</id>
+                <id>transform-yaml</id>
                 <phase>process-classes</phase> <!-- after compile where we privisioned the distro -->
                 <goals>
-                  <goal>transform</goal>
+                  <goal>execute</goal>
                 </goals>
                 <configuration>
-                  <transformationSets>
-
-                    <transformationSet>
-                      <dir>${project.build.directory}/${hawkular.services.dist.finalName}/standalone/configuration</dir>
-                      <stylesheet>${basedir}/src/test/xsl/standalone.xsl</stylesheet>
-                      <includes>
-                        <include>standalone.xml</include>
-                      </includes>
-                      <outputDir>${project.build.directory}/${hawkular.services.dist.finalName}/standalone/configuration</outputDir>
-                      <fileMappers>
-                        <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
-                          <pattern>^.*$</pattern>
-                          <replacement>standalone-with-reduced-agent.xml</replacement>
-                        </fileMapper>
-                      </fileMappers>
-                    </transformationSet>
-
-                  </transformationSets>
+                  <defaults>
+                    <hawkular.services.dist>${project.build.directory}/${hawkular.services.dist.finalName}</hawkular.services.dist>
+                  </defaults>
+                  <source>${project.basedir}/src/test/script/build-minimal-javaagent-config.groovy</source>
                 </configuration>
               </execution>
             </executions>
@@ -447,9 +440,12 @@
                     -Dhawkular.log.datastax.driver=${hawkular.log.datastax.driver}
                     -Dhawkular.log.cassandra=${hawkular.log.cassandra}
                     -Dhawkular.backend=embedded_cassandra
+                    -Djboss.modules.system.pkgs=org.jboss.byteman,org.jboss.logmanager
+                    -Djava.util.logging.manager=org.jboss.logmanager.LogManager
+                    -javaagent:${project.build.directory}/${hawkular.services.dist.finalName}/bin/hawkular-javaagent.jar=config=${project.build.directory}/${hawkular.services.dist.finalName}/standalone/configuration/hawkular-javaagent-minimal-config.yaml,delay=60
                     ${debug.wildfly.argLine}
                 </jboss.options>
-                <jboss.server.config.file.name>standalone-with-reduced-agent.xml</jboss.server.config.file.name>
+                <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
 
                 <hawkular.agent.itest.mgmt.user>${hawkular.agent.itest.mgmt.user}</hawkular.agent.itest.mgmt.user>
                 <hawkular.agent.itest.mgmt.password>${hawkular.agent.itest.mgmt.password}</hawkular.agent.itest.mgmt.password>

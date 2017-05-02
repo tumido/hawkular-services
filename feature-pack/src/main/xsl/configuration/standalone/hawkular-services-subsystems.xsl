@@ -21,15 +21,6 @@
 
   <xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes" xalan:indent-amount="4" standalone="no" />
 
-  <!-- Add hawkular-wildfly-agent.xml -->
-  <xsl:template match="/*[local-name()='config']/*[local-name()='subsystems']">
-    <xsl:copy>
-      <xsl:apply-templates select="./*" />
-      <xsl:comment> Required by Hawkular WildFly Agent: </xsl:comment>
-      <subsystem>hawkular-wildfly-agent.xml</subsystem>
-    </xsl:copy>
-  </xsl:template>
-
   <!-- Replace hawkular-nest-messaging-activemq.xml with hawkular-services-messaging-activemq.xml -->
   <xsl:template match="/*[local-name()='config']/*[local-name()='subsystems']/*[local-name()='subsystem' and text()='hawkular-nest-messaging-activemq.xml']">
     <subsystem>hawkular-services-messaging-activemq.xml</subsystem>

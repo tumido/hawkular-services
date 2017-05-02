@@ -38,9 +38,11 @@ add_cert_as_trusted() {
 }
 
 # add the security realm, HTTPS listener and turn SSL for agent
-use_standalone_ssl_xml() {
+use_standalone_ssl_config() {
   cp ${JBOSS_HOME}/standalone/configuration/standalone.xml ${JBOSS_HOME}/standalone/configuration/standalone-orig.xml
   cp ${JBOSS_HOME}/standalone/configuration/standalone-ssl.xml ${JBOSS_HOME}/standalone/configuration/standalone.xml
+  cp ${JBOSS_HOME}/standalone/configuration/hawkular-javaagent-config.yaml ${JBOSS_HOME}/standalone/configuration/hawkular-javaagent-config-orig.yaml
+  cp ${JBOSS_HOME}/standalone/configuration/hawkular-javaagent-config-ssl.yaml ${JBOSS_HOME}/standalone/configuration/hawkular-javaagent-config.yaml
 }
 
 add_certificate() {
@@ -93,6 +95,6 @@ add_certificate() {
 
       add_cert_as_trusted
     fi
-    use_standalone_ssl_xml
+    use_standalone_ssl_config
   fi
 }

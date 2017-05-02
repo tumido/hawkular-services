@@ -37,20 +37,26 @@
         </xsl:element>
       </xsl:element>
     </xsl:element>
-
-    <xsl:element name="security-realm" namespace="{namespace-uri()}">
-      <xsl:attribute name="name">HawkularAgentRealm</xsl:attribute>
-      <xsl:element name="authentication" namespace="{namespace-uri()}">
-        <xsl:element name="truststore" namespace="{namespace-uri()}">
-          <xsl:attribute name="path">hawkular.keystore</xsl:attribute>
-          <xsl:attribute name="relative-to">jboss.server.config.dir</xsl:attribute>
-          <xsl:attribute name="keystore-password">hawkular</xsl:attribute>
+    <!-- Turn on SSL on ManagementRealm -->
+    <xsl:copy>
+      <xsl:copy-of select="node()|comment()|@*" />
+      <xsl:element name="server-identities" namespace="{namespace-uri()}">
+        <xsl:element name="ssl" namespace="{namespace-uri()}">
+          <xsl:element name="keystore" namespace="{namespace-uri()}">
+            <xsl:attribute name="path">hawkular.keystore</xsl:attribute>
+            <xsl:attribute name="relative-to">jboss.server.config.dir</xsl:attribute>
+            <xsl:attribute name="keystore-password">hawkular</xsl:attribute>
+            <xsl:attribute name="key-password">hawkular</xsl:attribute>
+            <xsl:attribute name="alias">hawkular</xsl:attribute>
+          </xsl:element>
         </xsl:element>
       </xsl:element>
-    </xsl:element>
-    <xsl:copy>
-      <xsl:apply-templates select="node()|comment()|@*"/>
     </xsl:copy>
+  </xsl:template>
+
+  <!-- Use management-https -->
+  <xsl:template match="/*[local-name()='server']/*[local-name()='management']/*[local-name()='management-interfaces']/*[local-name()='http-interface' and contains(@security-realm, 'ManagementRealm')]/*[local-name()='socket-binding']/@http">
+    <xsl:attribute name="https">management-https</xsl:attribute>
   </xsl:template>
 
   <!-- copy everything else as-is -->

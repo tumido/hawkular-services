@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright 2016 Red Hat, Inc. and/or its affiliates
+    Copyright 2016-2017 Red Hat, Inc. and/or its affiliates
     and other contributors as indicated by the @author tags.
 
     Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,31 +22,11 @@
 
   <xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes" xalan:indent-amount="4" standalone="no" />
 
-  <xsl:param name="hawkular.agent.enabled" select="'true'"/>
-  <xsl:param name="hawkular.rest.user" select="''"/>
-  <xsl:param name="hawkular.rest.password" select="''"/>
   <xsl:param name="hawkular.embeddedc" select="'false'"/>
 
-  <!-- Add the default user and password if they were passed in through the parameters -->
+  <!-- Add the embedded cassandra if it was passed in through the parameters -->
   <xsl:template match="/*[local-name()='server']/*[local-name()='management']">
-    <xsl:message>hawkular.rest.user = <xsl:value-of select="$hawkular.rest.user" /></xsl:message>
     <system-properties>
-      <xsl:element name="property" namespace="{namespace-uri()}">
-        <xsl:attribute name="name">hawkular.agent.enabled</xsl:attribute>
-        <xsl:attribute name="value">${hawkular.agent.enabled:<xsl:value-of select="$hawkular.agent.enabled" />}</xsl:attribute>
-      </xsl:element>
-      <xsl:if test="$hawkular.rest.user != ''">
-        <xsl:element name="property" namespace="{namespace-uri()}">
-          <xsl:attribute name="name">hawkular.rest.user</xsl:attribute>
-          <xsl:attribute name="value">${hawkular.rest.user:<xsl:value-of select="$hawkular.rest.user" />}</xsl:attribute>
-        </xsl:element>
-      </xsl:if>
-      <xsl:if test="$hawkular.rest.password != ''">
-        <xsl:element name="property" namespace="{namespace-uri()}">
-          <xsl:attribute name="name">hawkular.rest.password</xsl:attribute>
-          <xsl:attribute name="value">${hawkular.rest.password:<xsl:value-of select="$hawkular.rest.password" />}</xsl:attribute>
-        </xsl:element>
-      </xsl:if>
       <xsl:if test="$hawkular.embeddedc = 'true'">
         <xsl:element name="property" namespace="{namespace-uri()}">
           <xsl:attribute name="name">hawkular.backend</xsl:attribute>

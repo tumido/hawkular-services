@@ -20,7 +20,7 @@
 <build xmlns="urn:wildfly:feature-pack-build:1.1">
   <dependencies>
     <artifact name="org.hawkular.commons:hawkular-nest-feature-pack" />
-    <artifact name="org.hawkular.agent:hawkular-wildfly-agent-feature-pack" />
+    <artifact name="org.hawkular.agent:hawkular-javaagent-wildfly-feature-pack" />
   </dependencies>
 
   <config>

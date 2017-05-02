@@ -34,10 +34,6 @@
 
   <fileSets>
     <fileSet>
-      <directory>${project.build.directory}/${project.build.finalName}/modules/system/add-ons/hawkular-agent</directory>
-      <outputDirectory>${docker.jboss_home}/modules/system/add-ons/hawkular-agent</outputDirectory>
-    </fileSet>
-    <fileSet>
       <directory>${project.build.directory}/${project.build.finalName}/modules/system/layers/hawkular</directory>
       <outputDirectory>${docker.jboss_home}/modules/system/layers/hawkular</outputDirectory>
     </fileSet>
@@ -68,7 +64,11 @@
       <fileMode>755</fileMode>
     </file>
     <file>
-      <source>src/main/resources/standalone.conf</source>
+      <source>${project.build.directory}/${project.build.finalName}/bin/hawkular-javaagent.jar</source>
+      <outputDirectory>${docker.jboss_home}/bin</outputDirectory>
+    </file>
+    <file>
+      <source>${project.build.directory}/${project.build.finalName}/bin/standalone.conf</source>
       <outputDirectory>${docker.jboss_home}/bin</outputDirectory>
       <fileMode>755</fileMode>
     </file>
@@ -78,6 +78,14 @@
     </file>
     <file>
       <source>${project.build.directory}/${project.build.finalName}/standalone/configuration/standalone-ssl.xml</source>
+      <outputDirectory>${docker.jboss_home}/standalone/configuration</outputDirectory>
+    </file>
+    <file>
+      <source>${project.build.directory}/${project.build.finalName}/standalone/configuration/hawkular-javaagent-config.yaml</source>
+      <outputDirectory>${docker.jboss_home}/standalone/configuration</outputDirectory>
+    </file>
+    <file>
+      <source>${project.build.directory}/${project.build.finalName}/standalone/configuration/hawkular-javaagent-config-ssl.yaml</source>
       <outputDirectory>${docker.jboss_home}/standalone/configuration</outputDirectory>
     </file>
     <file>
