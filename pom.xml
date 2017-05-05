@@ -71,7 +71,7 @@
     <version.javaee.spec>7.0</version.javaee.spec>
     <version.org.hawkular.agent>1.0.0.CR2</version.org.hawkular.agent>
     <!-- The Alerting version must correspond to the version packaged with Metrics! -->
-    <version.org.hawkular.alerts>1.6.0.Final</version.org.hawkular.alerts>
+    <version.org.hawkular.alerts>1.6.2.Final</version.org.hawkular.alerts>
     <version.org.hawkular.commons>0.9.4.Final</version.org.hawkular.commons>
     <version.org.hawkular.metrics>0.26.1.Final</version.org.hawkular.metrics>
     <version.org.jboss.arquillian>1.1.11.Final</version.org.jboss.arquillian>
