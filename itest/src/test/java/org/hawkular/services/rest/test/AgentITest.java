@@ -18,6 +18,7 @@ package org.hawkular.services.rest.test;
 
 import java.util.List;
 
+import org.hawkular.agent.commandcli.CommandCli;
 import org.hawkular.cmdgw.ws.test.EchoCommandITest;
 import org.hawkular.inventory.api.model.ExtendedInventoryStructure;
 import org.hawkular.services.rest.test.TestClient.Retry;
@@ -25,6 +26,8 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.logging.Logger;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 import okhttp3.HttpUrl;
 
@@ -113,16 +116,16 @@ public class AgentITest extends AbstractTestBase {
                     testResponse
                             .assertCode(200)
                             .assertJson(foundDataPoints -> {
-                        log.infof("Request to [%s] returned datapoints [%s]", url, foundDataPoints);
+                                log.infof("Request to [%s] returned datapoints [%s]", url, foundDataPoints);
 
-                        Assert.assertTrue(foundDataPoints.isArray(), String.format(
-                                "[%s] should have returned a json array, while it returned [%s]",
-                                testResponse.getRequest(), foundDataPoints));
-                        Assert.assertTrue(foundDataPoints.size() >= 1, String.format(
-                                "[%s] should have returned a json array with size >= 1, while it returned [%s]",
-                                testResponse.getRequest(), foundDataPoints));
-                    });
-                } , Retry.times(500).delay(100));
+                                Assert.assertTrue(foundDataPoints.isArray(), String.format(
+                                        "[%s] should have returned a json array, while it returned [%s]",
+                                        testResponse.getRequest(), foundDataPoints));
+                                Assert.assertTrue(foundDataPoints.size() >= 1, String.format(
+                                        "[%s] should have returned a json array with size >= 1, while it returned [%s]",
+                                        testResponse.getRequest(), foundDataPoints));
+                            });
+                }, Retry.times(500).delay(100));
     }
 
     /**
@@ -157,8 +160,8 @@ public class AgentITest extends AbstractTestBase {
                                         "[%s] should have returned a json array with size >= 2, while it returned [%s]",
                                         testResponse.getRequest(), foundResources));
 
-                                List<ExtendedInventoryStructure> structures
-                                        = InventoryHelper.extractStructuresFromResponse(foundResources);
+                                List<ExtendedInventoryStructure> structures = InventoryHelper
+                                        .extractStructuresFromResponse(foundResources);
 
                                 ExtendedInventoryStructure wf = structures.stream()
                                         .filter(ext -> ext.getStructure().getRoot().getId().equals(wfServerId))
@@ -216,7 +219,102 @@ public class AgentITest extends AbstractTestBase {
                             });
 
                 }, Retry.times(500).delay(1000));
-
     }
 
+    /**
+     * Checks that the local WildFly discovery generated a notification.
+     *
+     * @throws Throwable
+     */
+    @Test(dependsOnMethods = { "agentNotificationSuccess" })
+    @RunAsClient
+    public void agentBackfillSuccess() throws Throwable {
+
+        // ensure only up avail for for server
+        String metricId = "AI~R~[" + testFeedId + "%2FLocal~~]~AT~Server Availability~Server Availability";
+        String availPath = "/hawkular/metrics/availability/" + metricId + "/raw";
+
+        testClient.newRequest()
+                .header("Hawkular-Tenant", testTenantId)
+                .path(availPath)
+                .get()
+                .assertWithRetries(testResponse -> {
+                    testResponse
+                            .assertCode(200)
+                            .assertJson(foundAvail -> {
+
+                                log.warnf("Got avail [%s]", foundAvail);
+                                Assert.assertTrue(foundAvail.isArray(), String.format(
+                                        "[%s] should have returned a json array, while it returned [%s]",
+                                        testResponse.getRequest(), foundAvail));
+                                Assert.assertTrue(foundAvail.size() >= 1, String.format(
+                                        "[%s] should have returned a json array with size >= 1, while it returned [%s]",
+                                        testResponse.getRequest(), foundAvail));
+                                boolean allUp = true;
+                                for (int i = 0; (i < foundAvail.size()); ++i) {
+                                    JsonNode availData = foundAvail.get(i);
+                                    if (!"up".equalsIgnoreCase(availData.get("value").asText())) {
+                                        allUp = false;
+                                        break;
+                                    }
+                                }
+                                Assert.assertTrue(allUp, String.format(
+                                        "[%s] should have all 'up' avail data points but returned [%s]",
+                                        testResponse.getRequest(), foundAvail));
+                            });
+
+                }, Retry.times(50).delay(1000));
+
+        // stop the agent, should cause a backfill
+        String serverUrl = baseUri + "/hawkular/command-gateway/ui/ws";
+        String agentCP = "/t;" + testTenantId + "/f;" + testFeedId
+                + "/r;Local%20JMX~org.hawkular:type%3dhawkular-javaagent";
+        String pResourcePath = "-PresourcePath=" + agentCP;
+        String[] command = {
+                "--output-dir", "./target",
+                "--server-url", serverUrl,
+                "--username", testUser,
+                "--password", testPasword,
+                "--command", "ExecuteOperationRequest",
+                pResourcePath,
+                "-PoperationName=Stop" };
+
+        try {
+            CommandCli.main(command);
+        } catch (Throwable t) {
+            Assert.fail("Failed to execute agent stop command", t);
+        }
+
+        // look for the not-up (down, unknown) avail to be set by the backfiller
+        testClient.newRequest()
+                .header("Hawkular-Tenant", testTenantId)
+                .path(availPath)
+                .get()
+                .assertWithRetries(testResponse -> {
+                    testResponse
+                            .assertCode(200)
+                            .assertJson(foundAvail -> {
+
+                                log.warnf("Got avail [%s]", foundAvail);
+                                Assert.assertTrue(foundAvail.isArray(), String.format(
+                                        "[%s] should have returned a json array, while it returned [%s]",
+                                        testResponse.getRequest(), foundAvail));
+                                Assert.assertTrue(foundAvail.size() >= 1, String.format(
+                                        "[%s] should have returned a json array with size >= 1, while it returned [%s]",
+                                        testResponse.getRequest(), foundAvail));
+                                boolean allUp = true;
+                                for (int i = 0; (i < foundAvail.size()); ++i) {
+                                    JsonNode availData = foundAvail.get(i);
+                                    if (!"up".equalsIgnoreCase(availData.get("value").asText())) {
+                                        allUp = false;
+                                        break;
+                                    }
+                                }
+                                Assert.assertTrue(!allUp, String.format(
+                                        "[%s] should have had a 'down' avail data point but returned [%s]",
+                                        testResponse.getRequest(), foundAvail));
+                            });
+
+                }, Retry.times(50).delay(1000));
+    }
 }

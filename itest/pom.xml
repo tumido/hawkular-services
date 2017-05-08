@@ -77,6 +77,13 @@
     </dependency>
 
     <dependency>
+      <groupId>org.hawkular.agent</groupId>
+      <artifactId>hawkular-agent-command-cli</artifactId>
+      <version>${version.org.hawkular.agent}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
       <groupId>org.hawkular.alerts</groupId>
       <artifactId>hawkular-alerts-api</artifactId>
       <version>${version.org.hawkular.alerts}</version>
@@ -206,10 +213,9 @@
         <trimStackTrace>false</trimStackTrace><!-- maven-failsafe-plugin -->
         <debug.failsafe.argLine />
         <debug.wildfly.argLine />
-        <hawkular.services.itest.includes>**/*ITest.class</hawkular.services.itest.includes>
+        <hawkular.services.itest.includes>**/*ITest*</hawkular.services.itest.includes>
 
         <hawkular.services.dist.finalName>hawkular-services-dist-${project.version}</hawkular.services.dist.finalName>
-
 
         <hawkular.agent.itest.mgmt.user>itest-admin</hawkular.agent.itest.mgmt.user>
         <!-- <hawkular.agent.itest.mgmt.password> set to a random value using gmaven plugin </hawkular.agent.itest.mgmt.password> -->
@@ -271,7 +277,7 @@
                 </configuration>
               </execution>
               <execution>
-                <id>deploy-embedded-cassandra</id>
+                <id>deploy-itest-components</id>
                 <phase>pre-integration-test</phase>
                 <goals>
                   <goal>copy</goal>
