@@ -27,7 +27,7 @@ metadata:
 parameters:
 - name: HAWKULAR_SERVICES_IMAGE
   description: What docker image should be used for hawkular-services.
-  value: hawkular/hawkular-services:0.33.0.Final
+  value: hawkular/hawkular-services:0.38.0.Final
 - name: CASSANDRA_IMAGE
   description: What docker image should be used for cassandra node.
   value: openshift/origin-metrics-cassandra:v1.4.1
@@ -42,6 +42,10 @@ parameters:
 - name: ROUTE_HOSTNAME
   description: Under this hostname the Hawkular Services will be accessible, if left blank a value will be defaulted.
   displayName: Hostname
+- name: HAWKULAR_USE_SSL
+  description: Should the self-signed certificate be created
+  displayName: Use SSL
+  value: "true"
 - name: HAWKULAR_USER
   description: Username that is used for accessing the Hawkular Services, if left blank a value will be generated.
   displayName: Hawkular User
@@ -70,6 +74,10 @@ objects:
       port: 8080
       protocol: TCP
       targetPort: 8080
+    - name: https-8443-tcp
+      port: 8443
+      protocol: TCP
+      targetPort: 8443
     - name: admin-9990-tcp
       port: 9990
       protocol: TCP
@@ -127,6 +135,8 @@ objects:
             value: remote
           - name: CASSANDRA_NODES
             value: hawkular-cassandra
+          - name: HAWKULAR_USE_SSL
+            value: ${HAWKULAR_USE_SSL}
           - name: HAWKULAR_USER
             value: ${HAWKULAR_USER}
           - name: HAWKULAR_PASSWORD
@@ -138,6 +148,7 @@ objects:
             mountPath: /var/opt/hawkular
           ports:
           - containerPort: 8080
+          - containerPort: 8443
           - containerPort: 9990
           livenessProbe:
             exec:

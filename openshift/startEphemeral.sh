@@ -18,7 +18,7 @@
 
 PREPARE_CLUSTER="${PREPARE_CLUSTER:-true}"
 OC_CLUSTER_VERSION="${OC_CLUSTER_VERSION:-v1.4.1}"
-HAWKULAR_SERVICES_IMAGE="${HAWKULAR_SERVICES_IMAGE:-hawkular/hawkular-services:0.33.0.Final}"
+HAWKULAR_SERVICES_IMAGE="${HAWKULAR_SERVICES_IMAGE:-hawkular/hawkular-services:0.38.0.Final}"
 CASSANDRA_IMAGE="openshift/origin-metrics-cassandra:${OC_CLUSTER_VERSION}"
 PROJECT_NAME="${PROJECT_NAME:-ephemeral}"
 ROUTE_NAME="${ROUTE_NAME:-hawkular-services}"
