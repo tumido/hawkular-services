@@ -160,7 +160,7 @@ objects:
             exec:
               command:
               - /opt/hawkular/bin/ready.sh
-            initialDelaySeconds: 120
+            initialDelaySeconds: 35
             timeoutSeconds: 3
             periodSeconds: 5
             successThreshold: 1
@@ -207,11 +207,11 @@ objects:
           readinessProbe:
             exec:
               command: ['nodetool', 'status']
-            initialDelaySeconds: 30
+            initialDelaySeconds: 15
             timeoutSeconds: 10
             periodSeconds: 15
             successThreshold: 1
-            failureThreshold: 3
+            failureThreshold: 6
           livenessProbe:
             exec:
               command: ['nodetool', 'status']
