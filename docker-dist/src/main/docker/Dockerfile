@@ -40,7 +40,7 @@ USER root
 RUN yum install --quiet -y openssl && \
     rm -rf /var/cache/yum && \
     mkdir -p ${HAWKULAR_DATA} && \
-    chown -R jboss:jboss ${JBOSS_HOME}/{standalone,domain} ${HAWKULAR_DATA} $JAVA_HOME/jre/lib/security/cacerts && \
+    chown -RH jboss:jboss ${JBOSS_HOME}/{standalone,domain} ${HAWKULAR_DATA} $JAVA_HOME/jre/lib/security/cacerts && \
     chmod -R ugo+rw ${JBOSS_HOME}/{standalone,domain} ${HAWKULAR_DATA} $JAVA_HOME/jre/lib/security/cacerts
 
 VOLUME ["${HAWKULAR_DATA}"]
