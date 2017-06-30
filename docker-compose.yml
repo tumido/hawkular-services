@@ -15,37 +15,20 @@
 # limitations under the License.
 #
 
-# Example of an instrumented wildfly that talks to hawkular
-#hawkfly:
-#  image: "pilhuhn/hawkfly:latest"
-#  ports:
-#    - "8081:8080"
-#  links:
-#    - hawkular
-
-
-# The hawkular-server
 hawkular:
   image: "hawkular/hawkular-services:latest"
   ports:
     - "8080:8080"
     - "8443:8443"
-    - "8787:8787"
-  volumes:
-    - /tmp/opt/hawkular/server:/var/opt/hawkular
+    - "9990:9990"
   links:
     - myCassandra
+  volumes:
+    - /tmp/opt/hawkular/server:/opt/data
   environment:
-    - HAWKULAR_BACKEND=remote
     - CASSANDRA_NODES=myCassandra
-    - HAWKULAR_USER=jdoe
-    - HAWKULAR_PASSWORD=password
-    - HAWKULAR_AGENT_ENABLE=true
-    - HAWKULAR_METRICS_TTL=17
-# The used Cassandra container
+    - ADMIN_TOKEN
 myCassandra:
-  image: cassandra:3.0.9
+  image: cassandra:3.0.12
   environment:
     - CASSANDRA_START_RPC=true
-  volumes:
-    - /tmp/opt/hawkular/cassandra:/var/lib/cassandra
