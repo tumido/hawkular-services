@@ -18,7 +18,7 @@
 ---
 project_name: myproject
 
-openshift_cluster_version: v1.4.1
+openshift_cluster_version: v1.5.1
 
 # put here your publicly available ip addresss or hostname if you want to expose it
 # if left blank, it will be defaulted
