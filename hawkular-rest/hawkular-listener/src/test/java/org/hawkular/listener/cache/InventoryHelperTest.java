@@ -32,6 +32,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.GZIPOutputStream;
 
+import org.hawkular.inventory.api.model.AbstractElement;
 import org.hawkular.inventory.api.model.ExtendedInventoryStructure;
 import org.hawkular.inventory.api.model.InventoryStructure;
 import org.hawkular.inventory.api.model.MetricDataType;
@@ -252,16 +253,16 @@ public class InventoryHelperTest {
                     .build();
 
         // Test & assertions
-        List<org.hawkular.inventory.api.model.Metric.Blueprint> collected = new CopyOnWriteArrayList<>();
+        List<InventoryHelper.Blueprint<AbstractElement.Blueprint, org.hawkular.inventory.api.model.Metric.Blueprint>> collected = new CopyOnWriteArrayList<>();
         InventoryHelper.listMetricsForType(metricsService, tenant, feed, bp, currentTime)
                 .toList()
                 .subscribe(collected::addAll, Throwables::propagate);
         Assert.assertEquals(4, collected.size());
         // Make sure we only have metric1 and metric2 (their type is metricType1), and not metric3 (type metricType2)
-        Assert.assertEquals("metric1", collected.get(0).getId());
-        Assert.assertEquals("metric2", collected.get(1).getId());
-        Assert.assertEquals("metric1", collected.get(2).getId());
-        Assert.assertEquals("metric2", collected.get(3).getId());
+        Assert.assertEquals("metric1", collected.get(0).get().getId());
+        Assert.assertEquals("metric2", collected.get(1).get().getId());
+        Assert.assertEquals("metric1", collected.get(2).get().getId());
+        Assert.assertEquals("metric2", collected.get(3).get().getId());
     }
 
     @Test
@@ -282,7 +283,7 @@ public class InventoryHelperTest {
                 .build();
 
         // Test & assertions
-        List<org.hawkular.inventory.api.model.Metric.Blueprint> collected = new CopyOnWriteArrayList<>();
+        List<InventoryHelper.Blueprint<AbstractElement.Blueprint, org.hawkular.inventory.api.model.Metric.Blueprint>> collected = new CopyOnWriteArrayList<>();
         InventoryHelper.listMetricsForType(metricsService, tenant, feed, bp, currentTime)
                 .toList()
                 .subscribe(collected::addAll, Throwables::propagate);
@@ -311,7 +312,7 @@ public class InventoryHelperTest {
                 .build();
 
         // Test & assertions
-        List<org.hawkular.inventory.api.model.Metric.Blueprint> collected = new CopyOnWriteArrayList<>();
+        List<InventoryHelper.Blueprint<AbstractElement.Blueprint, org.hawkular.inventory.api.model.Metric.Blueprint>> collected = new CopyOnWriteArrayList<>();
         InventoryHelper.listMetricsForType(metricsService, tenant, feed, bp, currentTime)
                 .toList()
                 .subscribe(collected::addAll, Throwables::propagate);

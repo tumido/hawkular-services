@@ -18,10 +18,7 @@ package org.hawkular.rest;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
-import java.util.Arrays;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -32,9 +29,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
 import org.hawkular.client.api.Notification;
-import org.hawkular.client.api.NotificationType;
-import org.hawkular.inventory.paths.CanonicalPath;
-import org.hawkular.listener.bus.ListenerUtils;
+import org.hawkular.listener.MIQEventUtils;
 import org.hawkular.rest.json.ApiError;
 import org.jboss.logging.Logger;
 
@@ -52,7 +47,7 @@ public class ApiHandler {
 
     public static final String TENANT_HEADER_NAME = "Hawkular-Tenant";
 
-    private final ListenerUtils utils = new ListenerUtils();
+    private final MIQEventUtils miqEventUtils = new MIQEventUtils();
 
     @HeaderParam(TENANT_HEADER_NAME)
     String tenantId;
@@ -97,6 +92,10 @@ public class ApiHandler {
                 case RESOURCE_ADDED:
                     handleResourceAdded(notification);
                     break;
+                case AVAIL_STARTING:
+                case AVAIL_CHANGE:
+                    handleAvailChanged(notification);
+                    break;
                 default:
                     return ResponseUtil.badRequest("Unhandled Notification Type: " + notification.getType());
 
@@ -113,34 +112,26 @@ public class ApiHandler {
         }
     }
 
-    private static final Set<String> SERVER_TYPES = new HashSet<>(Arrays.asList(
-            "Domain Host",
-            "Domain WildFly Server",
-            "Domain WildFly Server Controller",
-            "Host Controller",
-            "WildFly Server"));
-
     private void handleResourceAdded(Notification notification) {
-        String resourceType = notification.getProperties().get("resourceType");
-        if (isEmpty(resourceType)) {
-            throw new IllegalArgumentException("Required Property [resourceType] is missing or is an invalid type.");
-        }
-        String resourcePath = notification.getProperties().get("resourcePath");
-        CanonicalPath cp;
-        try {
-            cp = CanonicalPath.fromString(resourcePath);
-        } catch (Exception e) {
-            throw new IllegalArgumentException(
-                    "Required Property [resourcePath] is missing or is an invalid CanonicalPath: " + e.getMessage());
-        }
+        String resourceType = getRequiredValue(notification, "resourceType");
+        String resourcePath = getRequiredValue(notification, "resourcePath");
+        miqEventUtils.handleResourceAdded(resourceType, resourcePath);
+    }
 
-        if (SERVER_TYPES.contains(resourceType)) {
-            String eventId = NotificationType.RESOURCE_ADDED.name() + "_" + cp.toString();
-            String message = "Added: " + resourceType;
+    private void handleAvailChanged(Notification notification) {
+        String resourceType = getRequiredValue(notification, "resourceType");
+        String resourcePath = getRequiredValue(notification, "resourcePath");
+        String availType = getRequiredValue(notification, "availType");
+        String newAvail = getRequiredValue(notification, "newAvail");
+        miqEventUtils.handleResourceAvailChange(resourcePath, availType, newAvail);
+    }
 
-            utils.addEvent(eventId, true, cp, "Inventory Change", message, "hawkular_event",
-                    "MiddlewareServer", message);
+    private String getRequiredValue(Notification notification, String key) {
+        String value = notification.getProperties().get(key);
+        if (isEmpty(value)) {
+            throw new IllegalArgumentException("Required Property [" + key +"] is missing or is an invalid type.");
         }
+        return value;
     }
 
     public static boolean isEmpty(String s) {

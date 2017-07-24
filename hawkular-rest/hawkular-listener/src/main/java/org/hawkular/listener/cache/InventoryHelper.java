@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
+import org.hawkular.inventory.api.model.AbstractElement;
 import org.hawkular.inventory.api.model.ExtendedInventoryStructure;
 import org.hawkular.inventory.api.model.Metric;
 import org.hawkular.inventory.api.model.MetricType;
@@ -61,6 +62,51 @@ public final class InventoryHelper {
     }
 
     private InventoryHelper() {
+    }
+
+    /**
+     * Helper class to carry additional data with the Blueprint.
+     * @param <B> Blueprint used
+     */
+    public static class Blueprint<BParent extends AbstractElement.Blueprint, B extends AbstractElement.Blueprint> {
+        private BParent parent;
+        private B blueprint;
+
+        private static class Builder<BParent extends AbstractElement.Blueprint, B extends AbstractElement.Blueprint> {
+            private BParent parent;
+            private B blueprint;
+
+            public Builder(B blueprint) {
+                this.blueprint = blueprint;
+            }
+
+            public Builder<BParent, B> parent(BParent parent) {
+                this.parent = parent;
+                return this;
+            }
+
+            public Blueprint<BParent, B> build() {
+                return new Blueprint<>(blueprint, parent);
+            }
+        }
+
+        public static <BParent extends AbstractElement.Blueprint, B extends AbstractElement.Blueprint>
+        Builder<BParent, B> builder(B blueprint) {
+            return new Builder<>(blueprint);
+        }
+
+        private Blueprint(B blueprint, BParent parent) {
+            this.blueprint = blueprint;
+            this.parent = parent;
+        }
+
+        public BParent getParent() {
+            return parent;
+        }
+
+        public B get() {
+            return blueprint;
+        }
     }
 
     /**
@@ -114,21 +160,23 @@ public final class InventoryHelper {
     /**
      * Get the list of metrics for given tenant, feed and metric type
      */
-    static Observable<Metric.Blueprint> listMetricsForType(MetricsService metricsService,
-                                                           String tenantId,
-                                                           String feedId,
-                                                           MetricType.Blueprint metricType) {
+    static Observable<Blueprint<AbstractElement.Blueprint, Metric.Blueprint>> listMetricsForType(
+            MetricsService metricsService,
+            String tenantId,
+            String feedId,
+            MetricType.Blueprint metricType) {
         return listMetricsForType(metricsService, tenantId, feedId, metricType, System.currentTimeMillis());
     }
 
     /**
      * Get the list of metrics for given tenant, feed and metric type
      */
-    static Observable<Metric.Blueprint> listMetricsForType(MetricsService metricsService,
-                                                           String tenantId,
-                                                           String feedId,
-                                                           MetricType.Blueprint metricType,
-                                                           long currentTime) {
+    static Observable<Blueprint<AbstractElement.Blueprint, Metric.Blueprint>> listMetricsForType(
+            MetricsService metricsService,
+            String tenantId,
+            String feedId,
+            MetricType.Blueprint metricType,
+            long currentTime) {
         String escapedForRegex = Pattern.quote("|" + metricType.getId() + "|");
         String tags = "module:inventory,feed:" + feedId + ",type:r,mtypes:.*" + escapedForRegex + ".*";
         return metricsService.findMetricsWithFilters(tenantId, org.hawkular.metrics.model.MetricType.STRING, tags)
@@ -140,7 +188,7 @@ public final class InventoryHelper {
                                 try {
                                     return rebuildFromChunks(dataPoints);
                                 } catch (InvalidInventoryChunksException e) {
-                                    e.addContext("metricType", metricType.getId());
+                                    e.addContext("metricType", metricType.getMetricDataType().getDisplayName());
                                     e.addContext("metricId", metric.getId());
                                     throw Throwables.propagate(e);
                                 }
@@ -150,13 +198,16 @@ public final class InventoryHelper {
                 });
     }
 
-    private static List<Metric.Blueprint> extractMetricsForType(ExtendedInventoryStructure inv, String metricTypeId) {
+    private static List<Blueprint<AbstractElement.Blueprint, Metric.Blueprint>> extractMetricsForType
+            (ExtendedInventoryStructure inv, String metricTypeId) {
         return inv.getMetricTypesIndex().getOrDefault(metricTypeId, Collections.emptyList()).stream()
                 .map(relPath -> inv.getStructure().get(RelativePath.fromString(relPath)))
-                .filter(bp -> bp instanceof Metric.Blueprint)
-                .map(bp -> (Metric.Blueprint)bp)
+                .filter(bp -> bp instanceof  Metric.Blueprint)
+                .map(bp -> Blueprint
+                        .builder((Metric.Blueprint)bp)
+                        .parent(inv.getStructure().getNode(RelativePath.fromString("")).getEntity())
+                        .build())
                 .collect(Collectors.toList());
-
     }
 
     @VisibleForTesting

@@ -39,7 +39,10 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.naming.InitialContext;
 
+import org.hawkular.inventory.api.model.AbstractElement;
 import org.hawkular.inventory.api.model.MetricDataType;
+import org.hawkular.inventory.paths.CanonicalPath;
+import org.hawkular.listener.MIQEventUtils;
 import org.hawkular.metrics.core.service.MetricsService;
 import org.hawkular.metrics.model.AvailabilityType;
 import org.hawkular.metrics.model.DataPoint;
@@ -205,6 +208,8 @@ public class BackfillCacheManager implements BackfillCache {
 
     // Lazy init these when we actually need to do a backfill
     private MetricsService metricsService;
+
+    private MIQEventUtils miqEventUtils = new MIQEventUtils();
 
     /**
      * Access to the manager of the caches used for tracking avail.
@@ -378,7 +383,8 @@ public class BackfillCacheManager implements BackfillCache {
         backfillCache.put(key, value);
 
         // Fetch from hwkinventory all avail metrics for the feed on this tenant
-        Observable<org.hawkular.inventory.api.model.Metric.Blueprint> metricsObs = InventoryHelper
+        Observable<InventoryHelper.Blueprint<AbstractElement.Blueprint,
+                org.hawkular.inventory.api.model.Metric.Blueprint>> metricsObs = InventoryHelper
                 .listMetricTypes(metricsService, key.getTenantId(), key.getFeedId())
                 .filter(mt -> MetricDataType.AVAILABILITY == mt.getMetricDataType())
                 .flatMap(mt -> InventoryHelper.listMetricsForType(metricsService, key.getTenantId(), key.getFeedId(),
@@ -386,21 +392,36 @@ public class BackfillCacheManager implements BackfillCache {
 
         long now = System.currentTimeMillis();
 
-        List<DataPoint<AvailabilityType>> unknown = new ArrayList<>(1);
-        unknown.add(new DataPoint<>(now, AvailabilityType.UNKNOWN));
-
         List<DataPoint<AvailabilityType>> down = new ArrayList<>(1);
         down.add(new DataPoint<>(now, AvailabilityType.DOWN));
 
         Observable<Metric<AvailabilityType>> availabilities = metricsObs.map(invMetric -> {
-            // Set UNKNOWN for all remotely monitored avail metrics reported by this feed/tenant
-            // Set DOWN for all locally monitored avail metrics, or by default, reported by this feed/tenant
+            // Set DOWN for all avail metrics reported by this feed/tenant,
+            // We are assuming two things:
+            // 1) All resources/metrics are from a javaagent
+            // 2) That javaagent is deployed and reporting on only one server
             MetricId<AvailabilityType> metricId = new MetricId<>(key.getTenantId(), MetricType.AVAILABILITY,
-                    invMetric.getId());
-            String monitoringType = (String) invMetric.getProperties().get(MONITORING_TYPE_KEY);
-            List<DataPoint<AvailabilityType>> availList = MONITORING_TYPE_VALUE_REMOTE
-                    .equalsIgnoreCase(monitoringType) ? unknown : down;
-            Metric<AvailabilityType> backfillAvail = new Metric<>(metricId, availList);
+                    invMetric.get().getId());
+            Metric<AvailabilityType> backfillAvail = new Metric<>(metricId, down);
+
+            // Trigger an AvailChange for the servers as going down with the agent
+            // Only metrics whose name is equal to MIQEventUtils.SERVER_AVAILABILITY_NAME are of interest because
+            //  these belong to a server
+            if (invMetric.getParent() instanceof org.hawkular.inventory.api.model.Resource.Blueprint &&
+                    invMetric.get().getName().equals(MIQEventUtils.SERVER_AVAILABILITY_NAME)) {
+                org.hawkular.inventory.api.model.Resource.Blueprint
+                        resource = (org.hawkular.inventory.api.model.Resource.Blueprint) invMetric.getParent();
+                CanonicalPath resourcePath = CanonicalPath.of()
+                        .tenant(key.getTenantId())
+                        .feed(key.getFeedId())
+                        .resource(resource.getId())
+                        .get();
+                miqEventUtils.handleResourceAvailChange(
+                        resourcePath.toString(),
+                        invMetric.get().getName(),
+                        AvailabilityType.DOWN.name());
+
+            }
             return backfillAvail;
         });
 

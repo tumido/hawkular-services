@@ -54,7 +54,7 @@ public class ListenerUtils {
     /**
      * @param eventId if null will be a generated UUID
      * @param checkExists addEvent only if event with the provided eventId does not already exist
-     * @param resourcePathStr resource canonical path
+     * @param resourcePath resource canonical path
      * @param category the event category
      * @param text the event text
      * @param miqEventType the MIQ event type
