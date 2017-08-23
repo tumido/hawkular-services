@@ -42,17 +42,29 @@ get_credentials() {
 create_user() {
   # we create only if there's users starting with ${username}
   grep "^${username}" "${JBOSS_HOME}/standalone/configuration/application-users.properties" > /dev/null
-  RT=$?
+  RT_APP=$?
+  # While using openshift, we couldn't access the management console without an username and password
+  # Also checking the management users (see https://github.com/hawkular/hawkular-services/issues/172 )
+  grep "^${username}" "${JBOSS_HOME}/standalone/configuration/mgmt-users.properties" > /dev/null
+  RT_MGMT=$?
 
-  if [[ ${RT} -eq 0 ]]; then
+  if [[ ${RT_APP} -eq 0 ]] && [[ ${RT_MGMT} -eq 0 ]]; then
     echo "The '${username}' user has already been found."
-  elif [[ ${RT} -ne 1 ]]; then
+  elif [[ ${RT_APP} -ne 1 ]] || [[ ${RT_MGMT} -ne 1 ]]; then
     echo "An error has been found when attempting to check if the '${username}' user exists. Aborting."
     exit 1
   else
-    # we add the ${username} user
-    ${JBOSS_HOME}/bin/add-user.sh -a -u "${username}" -p "${password}" -g read-write,read-only -s
-    RT=$?
+    # we add the ${username} user to application and management
+    RT=0
+    if [[ ${RT_APP} -ne 0 ]]; then
+      ${JBOSS_HOME}/bin/add-user.sh -a -u "${username}" -p "${password}" -g read-write,read-only -s
+      RT=$?
+    fi
+    if [[ ${RT} -eq 0 ]] && [[ ${RT_MGMT} -ne 0 ]]; then
+      ${JBOSS_HOME}/bin/add-user.sh -u "${username}" -p "${password}" -g read-write,read-only -s
+      RT=$?
+    fi
+
     [[ ${username_generated} != "true" ]] && [[ ${password_generated} != "true" ]] && return 0
     if [[ ${RT} -eq 0 ]]; then
       echo "------------------------------------"
