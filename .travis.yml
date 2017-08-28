@@ -2,6 +2,8 @@ sudo: required
 dist: trusty
 
 language: java
+jdk:
+  - openjdk8
 services:
   - docker
 
@@ -18,11 +20,6 @@ notifications:
     on_success: change
   webhooks:
     - http://hawkular-bot.herokuapp.com/notifications
-
-addons:
-  apt:
-    packages:
-    - oracle-java8-installer
 
 install:
 - ./mvnw -version -B
