@@ -23,12 +23,11 @@
   <id>${project.artifactId}</id>
   <formats>
     <format>zip</format>
-    <format>tar.gz</format>
   </formats>
   <includeBaseDirectory>true</includeBaseDirectory>
   <fileSets>
     <fileSet>
-      <directory>target/${project.build.finalName}</directory>
+      <directory>target/${distribution.name}-${project.version}</directory>
       <outputDirectory/>
     </fileSet>
   </fileSets>

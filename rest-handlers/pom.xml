@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <groupId>org.hawkular.services</groupId>
+    <artifactId>hawkular-services</artifactId>
+    <version>1.0.0.Final-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>hawkular-services-rest-handlers</artifactId>
+  <packaging>jar</packaging>
+
+  <name>Hawkular Services: Rest Handlers</name>
+
+  <dependencies>
+
+    <dependency>
+      <groupId>org.hawkular.services</groupId>
+      <artifactId>hawkular-services-commons</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.hawkular.services</groupId>
+      <artifactId>hawkular-services-inventory</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.hawkular.commons</groupId>
+      <artifactId>hawkular-commons-utils</artifactId>
+      <version>${version.org.hawkular.commons}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.hawkular.commons</groupId>
+      <artifactId>hawkular-rest-api</artifactId>
+      <version>${version.org.hawkular.commons}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-core</artifactId>
+      <version>${version.io.vertx}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-web</artifactId>
+      <version>${version.io.vertx}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+      <version>${version.junit}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>buildnumber-maven-plugin</artifactId>
+        <version>${version.org.codehaus.buildnumber-maven-plugin}</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>${version.org.apache.maven.plugins.maven-jar-plugin}</version>
+        <configuration>
+          <archive>
+            <index>true</index>
+            <manifest>
+              <addClasspath>true</addClasspath>
+            </manifest>
+            <manifestEntries>
+              <Implementation-Vendor-Id>org.hawkular.alerts</Implementation-Vendor-Id>
+              <Implementation-Version>${project.version}</Implementation-Version>
+              <Built-From-Git-SHA1>${buildNumber}</Built-From-Git-SHA1>
+              <Built-On>${timestamp}</Built-On>
+            </manifestEntries>
+          </archive>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+
+    <profile>
+      <id>docgen</id>
+      <properties>
+        <restDocDirectory>${project.basedir}/src/main/rest-doc</restDocDirectory>
+        <generatedDocDirectory>${project.build.directory}/generated</generatedDocDirectory>
+        <classesDirectory>${project.build.directory}/classes</classesDirectory>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.gmavenplus</groupId>
+            <artifactId>gmavenplus-plugin</artifactId>
+            <dependencies>
+              <dependency>
+                <groupId>org.codehaus.groovy</groupId>
+                <artifactId>groovy-all</artifactId>
+                <version>${version.org.codehaus.groovy}</version>
+              </dependency>
+            </dependencies>
+            <configuration>
+              <properties>
+                <alertingVersion>${project.version}</alertingVersion>
+                <classesDir>${classesDirectory}</classesDir>
+                <baseFile>${restDocDirectory}/base.adoc</baseFile>
+                <generatedFile>${generatedDocDirectory}/generated-doc.json</generatedFile>
+                <outputFile>${project.build.directory}/generated/rest-alerts-v2.adoc</outputFile>
+              </properties>
+              <scripts>
+                <script>file:///${restDocDirectory}/generate-api.groovy</script>
+                <script>file:///${restDocDirectory}/api-to-doc.groovy</script>
+              </scripts>
+            </configuration>
+            <executions>
+              <execution>
+                <id>generate-api-doc</id>
+                <phase>compile</phase>
+                <goals>
+                  <goal>execute</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+  </profiles>
+
+</project>

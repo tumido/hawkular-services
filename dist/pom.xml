@@ -23,19 +23,38 @@
   <parent>
     <groupId>org.hawkular.services</groupId>
     <artifactId>hawkular-services</artifactId>
-    <version>0.40.0.Final-SNAPSHOT</version>
+    <version>1.0.0.Final-SNAPSHOT</version>
   </parent>
 
   <artifactId>hawkular-services-dist</artifactId>
   <packaging>pom</packaging>
 
-  <name>Hawkular Services Distribution</name>
+  <name>Hawkular Services: Distribution</name>
 
   <dependencies>
+
     <dependency>
       <groupId>org.hawkular.services</groupId>
-      <artifactId>hawkular-services-feature-pack</artifactId>
-      <type>zip</type>
+      <artifactId>hawkular-services-rest-handlers</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.hawkular.commons</groupId>
+      <artifactId>hawkular-server</artifactId>
+      <version>${version.org.hawkular.commons}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
+      <version>${version.org.apache.logging.log4j}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>${version.org.apache.logging.log4j}</version>
     </dependency>
   </dependencies>
 
@@ -43,24 +62,8 @@
     <plugins>
 
       <plugin>
-        <groupId>org.wildfly.build</groupId>
-        <artifactId>wildfly-server-provisioning-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>server-provisioning</id>
-            <goals>
-              <goal>build</goal>
-            </goals>
-            <phase>compile</phase>
-            <configuration>
-              <config-file>server-provisioning.xml</config-file>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
         <artifactId>maven-resources-plugin</artifactId>
+        <version>${version.org.apache.maven.plugins.maven-resources-plugin}</version>
         <executions>
           <execution>
             <id>copy-resources</id>
@@ -69,15 +72,11 @@
               <goal>copy-resources</goal>
             </goals>
             <configuration>
-              <outputDirectory>${project.build.directory}/${project.build.finalName}</outputDirectory>
+              <outputDirectory>${project.build.directory}/${distribution.name}-${project.version}</outputDirectory>
               <resources>
                 <resource>
                   <directory>src/main/resources</directory>
                   <filtering>false</filtering>
-                </resource>
-                <resource>
-                  <directory>src/main/resources-filtered</directory>
-                  <filtering>true</filtering>
                 </resource>
               </resources>
             </configuration>
@@ -86,63 +85,46 @@
       </plugin>
 
       <plugin>
-        <groupId>com.mycila</groupId>
-        <artifactId>license-maven-plugin</artifactId>
-        <configuration>
-          <excludes combine.children="append">
-            <exclude>src/main/resources/**/*.css</exclude>
-          </excludes>
-        </configuration>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>set-run-sh-permissions</id>
+            <phase>package</phase>
+            <configuration>
+              <tasks>
+                <property name="target-to-run" value="${project.build.directory}/${distribution.name}-${project.version}"/>
+                <chmod file="${target-to-run}/hawkular.sh" perm="755"/>
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-dependencies</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/${distribution.name}-${project.version}/lib</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
     </plugins>
   </build>
 
   <profiles>
-    <profile>
-      <!-- A profile to build a development distro -->
-      <id>dev</id>
-      <properties>
-        <dozip>false</dozip>
-      </properties>
-
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>create-itest-users</id>
-                <phase>process-classes</phase>
-                <goals>
-                  <goal>exec</goal>
-                </goals>
-                <configuration>
-                  <executable>java</executable>
-                  <environmentVariables>
-                    <JBOSS_HOME>${project.build.directory}/${project.build.finalName}</JBOSS_HOME>
-                  </environmentVariables>
-                  <arguments>
-                    <argument>-jar</argument>
-                    <argument>${project.build.directory}/${project.build.finalName}/jboss-modules.jar</argument>
-                    <argument>-mp</argument>
-                    <argument>${project.build.directory}/${project.build.finalName}/modules</argument>
-                    <argument>org.jboss.as.domain-add-user</argument>
-                    <argument>-a</argument>
-                    <argument>--user</argument>
-                    <argument>${hawkular.rest.user}</argument>
-                    <argument>--password</argument>
-                    <argument>${hawkular.rest.password}</argument>
-                    <argument>--group</argument>
-                    <argument>read-write,read-only</argument>
-                  </arguments>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
     <profile>
       <id>dozip</id>
       <activation>
