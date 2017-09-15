@@ -26,20 +26,16 @@
     <version>1.0.0.Final-SNAPSHOT</version>
   </parent>
 
-  <artifactId>hawkular-services-inventory</artifactId>
+  <artifactId>hawkular-inventory-api</artifactId>
   <packaging>jar</packaging>
 
-  <name>Hawkular Services: Inventory</name>
+  <name>Hawkular Services: Inventory Service API</name>
 
   <dependencies>
-
+    <dependency>
+      <groupId>org.hawkular.services</groupId>
+      <artifactId>hawkular-inventory-model</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   </dependencies>
-
-  <build>
-
-  </build>
-
-  <profiles>
-
-  </profiles>
 </project>

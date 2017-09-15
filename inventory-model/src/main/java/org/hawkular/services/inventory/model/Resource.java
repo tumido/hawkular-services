@@ -30,7 +30,7 @@ public class Resource {
     private final String id;  // Unique index [Search resource by id]
     private final String name;
     private final String typeId;  // Index [Search all resources of type xx]
-    private final String rootId;  // Nullable; Index [Search all resources under root xx]
+    private final String rootId;  // Index [Search all resources under root xx]
     private final List<String> childrenIds;
     private final List<String> metricIds;
     private final Map<String, String> properties;

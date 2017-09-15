@@ -24,7 +24,7 @@
 
     <dependency>
       <groupId>org.hawkular.services</groupId>
-      <artifactId>hawkular-services-inventory</artifactId>
+      <artifactId>hawkular-inventory-service</artifactId>
       <version>${project.version}</version>
     </dependency>
 

@@ -46,7 +46,8 @@
     <module>commons</module>
     <module>dist</module>
     <module>inventory-model</module>
-    <module>inventory</module>
+    <module>inventory-api</module>
+    <module>inventory-service</module>
     <module>rest-handlers</module>
     <!--
 
@@ -85,7 +86,6 @@
     <hawkular.rest.user /><!-- empty in the default profile, set only in the dev profile -->
     <hawkular.rest.password /><!-- empty in the default profile, set only in the dev profile -->
   </properties>
-
 
   <profiles>
     <profile>
