@@ -29,6 +29,6 @@ hawkular:
     - CASSANDRA_NODES=myCassandra
     - ADMIN_TOKEN
 myCassandra:
-  image: cassandra:3.0.12
+  image: cassandra:3.0.14
   environment:
     - CASSANDRA_START_RPC=true
