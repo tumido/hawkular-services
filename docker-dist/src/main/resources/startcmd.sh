@@ -16,6 +16,35 @@
 # limitations under the License.
 #
 
+check_cassandra() {
+  # Check that cassandra is available and responding
+  if [ !  -z "${CASSANDRA_NODES}" ]; then
+    echo " ## Using external storage nodes ##"
+    export HAWKULAR_BACKEND=remote
+  elif [ ! -z "${CASSANDRA_SERVICE}" ]; then
+    echo " ## Using Kubernetes-style named service"
+    eval "s=${CASSANDRA_SERVICE^^}_SERVICE_HOST"
+    export CASSANDRA_NODES=${!s}
+    HAWKULAR_BACKEND=remote
+  fi
+
+  echo "CASSANDRA_NODES='${CASSANDRA_NODES}'"
+
+  if [ ! -z "${DB_TIMEOUT}" ]; then
+    echo "Waiting for DB (timeout=${DB_TIMEOUT})"
+    DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+    timeout "${DB_TIMEOUT}" "${DIR}/check-cnode.sh" ${CASSANDRA_NODES}
+    status=$?
+    if [[ $status -eq 124 ]]; then
+      echo "DB timed out"
+      exit $?
+    fi
+    if [ ! $status ]; then
+      exit 1
+    fi
+  fi
+}
+
 get_credentials() {
   # The username is obtained as a content of file '/client-secrets/hawkular-services.username'
   # if the file does not exist or is empty, the value of $HAWKULAR_USER is used
@@ -100,11 +129,16 @@ run_hawkular_services() {
 }
 
 main() {
+  if [ "${HAWKULAR_AGENT_ENABLE}" != "true" ]; then
+    HAWKULAR_AGENT_ENABLE="false"
+  fi
+
   echo "Starting Hawkular Services"
   source $(dirname "$0")/cert_utils.sh
   get_credentials
   create_user
   add_certificate
+  check_cassandra
   run_hawkular_services "$@"
 }
 

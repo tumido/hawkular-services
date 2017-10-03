@@ -64,6 +64,11 @@
       <fileMode>755</fileMode>
     </file>
     <file>
+      <source>src/main/resources/check-cnode.sh</source>
+      <outputDirectory>/opt/hawkular/bin</outputDirectory>
+      <fileMode>755</fileMode>
+    </file>
+    <file>
       <source>${project.build.directory}/${project.build.finalName}/bin/hawkular-javaagent.jar</source>
       <outputDirectory>${docker.jboss_home}/bin</outputDirectory>
     </file>
