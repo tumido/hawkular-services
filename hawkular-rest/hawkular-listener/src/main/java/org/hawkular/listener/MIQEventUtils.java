@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.hawkular.inventory.paths.CanonicalPath;
 import org.hawkular.listener.bus.ListenerUtils;
 
 /**
@@ -39,39 +38,47 @@ public class MIQEventUtils {
 
     public static final String SERVER_AVAILABILITY_NAME = "Server Availability";
 
-    public void handleResourceAdded(String resourceType, String resourcePath) {
+    public void handleResourceAdded(String resourceType, String feedId, String resourceId) {
         final String RESOURCE_ADDED = "RESOURCE_ADDED";
-        CanonicalPath cp;
-        try {
-            cp = CanonicalPath.fromString(resourcePath);
-        } catch (Exception e) {
-            throw new IllegalArgumentException(
-                    "Required Property [resourcePath] is missing or is an invalid CanonicalPath: " + e.getMessage());
+        if (isEmpty(feedId, resourceId)) {
+            throw new IllegalArgumentException("Required Property [feedId] or [resourceId] is missing.");
+
         }
 
         if (SERVER_TYPES.contains(resourceType)) {
-            String eventId = RESOURCE_ADDED + "_" + cp.toString();
+            String eventId = RESOURCE_ADDED + "_" + feedId + "_" + resourceId;
             String message = "Added: " + resourceType;
 
-            utils.addEvent(eventId, true, cp, "Inventory Change", message, "hawkular_event",
+            utils.addEvent(eventId, true, feedId, resourceId, "Inventory Change", message, "hawkular_event",
                     "MiddlewareServer", message);
         }
     }
 
-    public void handleResourceAvailChange(String resourcePath, String availType, String newAvail) {
-        CanonicalPath cp;
-        try {
-            cp = CanonicalPath.fromString(resourcePath);
-        } catch (Exception e) {
-            throw new IllegalArgumentException(
-                    "Required Property [resourcePath] is missing or is an invalid CanonicalPath: " + e.getMessage());
+    public void handleResourceAvailChange(String feedId, String resourceId, String availType, String newAvail) {
+        if (isEmpty(feedId, resourceId)) {
+            throw new IllegalArgumentException("Required Property [feedId] or [resourceId] is missing.");
+
         }
+
         if (availType.equals(SERVER_AVAILABILITY_NAME)) {
             String message = "Avail change [" + newAvail + "]: " + availType;
 
-            utils.addEvent(null, false, cp, "Inventory Change", message, "hawkular_event",
+            utils.addEvent(null, false, feedId, resourceId, "Inventory Change", message, "hawkular_event",
                     "MiddlewareServer", message);
         }
+    }
+
+    private static boolean isEmpty(String s) {
+        return s == null || s.isEmpty();
+    }
+
+    private static boolean isEmpty(String... s) {
+        for (int i = 0; i < s.length; i++) {
+            if (isEmpty(s[i])) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

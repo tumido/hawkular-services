@@ -23,11 +23,10 @@
       <module name="com.fasterxml.jackson.core.jackson-core"/>
       <module name="com.google.guava"/>
       <module name="org.hawkular.bus"/>
-      <module name="org.hawkular.commons.cassandra-driver"/>
-      <module name="org.hawkular.commons.hawkular-inventory-paths"/>
       <module name="org.infinispan" />
       <module name="deployment.hawkular-metrics.ear.hawkular-alerts.war" />
       <module name="deployment.hawkular-metrics.ear.hawkular-metrics.war" />
+      <module name="deployment.hawkular-inventory-service.war" />
     </dependencies>
   </deployment>
 </jboss-deployment-structure>

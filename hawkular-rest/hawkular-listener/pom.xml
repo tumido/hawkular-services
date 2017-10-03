@@ -45,20 +45,12 @@
 
     <dependency>
       <groupId>org.hawkular.commons</groupId>
-      <artifactId>hawkular-inventory-paths</artifactId>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.hawkular.commons</groupId>
       <artifactId>hawkular-inventory-api</artifactId>
-      <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>org.hawkular.commons</groupId>
-      <artifactId>hawkular-inventory-json-helper</artifactId>
-      <scope>provided</scope>
+      <artifactId>hawkular-inventory-model</artifactId>
     </dependency>
 
     <!-- Hawkular Alerts dependencies -->

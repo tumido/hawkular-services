@@ -39,9 +39,10 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.naming.InitialContext;
 
-import org.hawkular.inventory.api.model.AbstractElement;
-import org.hawkular.inventory.api.model.MetricDataType;
-import org.hawkular.inventory.paths.CanonicalPath;
+import org.hawkular.inventory.api.InventoryService;
+import org.hawkular.inventory.api.ResourceFilter;
+import org.hawkular.inventory.api.ResourceWithType;
+import org.hawkular.inventory.api.ResultSet;
 import org.hawkular.listener.MIQEventUtils;
 import org.hawkular.metrics.core.service.MetricsService;
 import org.hawkular.metrics.model.AvailabilityType;
@@ -128,6 +129,7 @@ public class BackfillCacheManager implements BackfillCache {
     private static final String DEFAULT_JOB_THREADS = "10";
     private static final String DEFAULT_PING_PERIOD_FACTOR = "2.5";
     private static final String DEFAULT_PING_PERIOD_MIN_SECS = "125";
+    private static final String DEFAULT_TENANT = "hawkular";
 
     private static final String PROP_JOB_PERIOD_SECS = "hawkular-services.backfill.job-period-secs";
     private static final String PROP_JOB_THREADS = "hawkular-services.backfill.job-threads";
@@ -144,6 +146,7 @@ public class BackfillCacheManager implements BackfillCache {
     private static final String MONITORING_TYPE_KEY = "hawkular-services.monitoring-type";
     private static final String MONITORING_TYPE_VALUE_REMOTE = "remote";
 
+    private static final String INVENTORY_SERVICE = "java:global/hawkular-inventory-service/InventoryServiceIspn";
     private static final String METRICS_SERVICE = "java:global/Hawkular/Metrics";
 
     static {
@@ -208,6 +211,8 @@ public class BackfillCacheManager implements BackfillCache {
 
     // Lazy init these when we actually need to do a backfill
     private MetricsService metricsService;
+
+    private InventoryService inventoryService;
 
     private MIQEventUtils miqEventUtils = new MIQEventUtils();
 
@@ -353,15 +358,7 @@ public class BackfillCacheManager implements BackfillCache {
             return;
         }
 
-        // Fetch all tenants for the feed
-        InventoryHelper.listTenantsForFeed(metricsService, feedId)
-                .doOnNext(tenant -> forceBackfill(tenant.getId(), feedAvailabilityMetricId))
-                .isEmpty()
-                .subscribe(wasEmpty -> {
-                    if (wasEmpty) {
-                        log.errorf("Expected at least one tenant for feedId [%s]", feedId);
-                    }
-                }, err -> log.error("Could not perform backfill", err));
+        forceBackfill(DEFAULT_TENANT, feedAvailabilityMetricId);
     }
 
     private void forceBackfill(String tenantId, String feedAvailabilityMetricId) {
@@ -374,6 +371,30 @@ public class BackfillCacheManager implements BackfillCache {
 
     }
 
+    private List<MetricResource> getAvailMetricsForFeed(String feedId) {
+        ResourceFilter filter = ResourceFilter.forFeed(feedId).build();
+        ResultSet<ResourceWithType> rs = inventoryService.getResources(filter);
+        long resultSetSize = rs.getResultSize();
+        long startOffset = rs.getStartOffset();
+        long rsSize;
+        int maxResults = 100;
+        List<MetricResource> availMetrics = new ArrayList<>();
+        do {
+            for (ResourceWithType resource : rs.getResults()) {
+                for (org.hawkular.inventory.model.Metric metric : resource.getMetrics()) {
+                    if (metric.getType().equals(MetricType.AVAILABILITY.getText())) {
+                        availMetrics.add(new MetricResource(resource.getId(), metric));
+                    }
+                }
+            }
+            rsSize = rs.getResults().size();
+            startOffset += rsSize;
+            rs = inventoryService.getResources(filter, startOffset, maxResults);
+
+        } while (startOffset < resultSetSize);
+        return availMetrics;
+    }
+
     private void doBackfill(CacheKey key, CacheValue value) {
         // only backfill once, so stop the backfill job
         cancelJob(key);
@@ -383,56 +404,42 @@ public class BackfillCacheManager implements BackfillCache {
         backfillCache.put(key, value);
 
         // Fetch from hwkinventory all avail metrics for the feed on this tenant
-        Observable<InventoryHelper.Blueprint<AbstractElement.Blueprint,
-                org.hawkular.inventory.api.model.Metric.Blueprint>> metricsObs = InventoryHelper
-                .listMetricTypes(metricsService, key.getTenantId(), key.getFeedId())
-                .filter(mt -> MetricDataType.AVAILABILITY == mt.getMetricDataType())
-                .flatMap(mt -> InventoryHelper.listMetricsForType(metricsService, key.getTenantId(), key.getFeedId(),
-                        mt));
+        List<MetricResource> availMetrics = getAvailMetricsForFeed(key.getFeedId());
 
         long now = System.currentTimeMillis();
 
         List<DataPoint<AvailabilityType>> down = new ArrayList<>(1);
         down.add(new DataPoint<>(now, AvailabilityType.DOWN));
 
-        Observable<Metric<AvailabilityType>> availabilities = metricsObs.map(invMetric -> {
+        List<Metric<AvailabilityType>> availabilites = new ArrayList<>();
+        for (MetricResource availMetric : availMetrics) {
             // Set DOWN for all avail metrics reported by this feed/tenant,
             // We are assuming two things:
             // 1) All resources/metrics are from a javaagent
             // 2) That javaagent is deployed and reporting on only one server
             MetricId<AvailabilityType> metricId = new MetricId<>(key.getTenantId(), MetricType.AVAILABILITY,
-                    invMetric.get().getId());
+                    // TODO [lponce] to confirm with agent
+                    availMetric.getMetric().getProperties().get("id"));
             Metric<AvailabilityType> backfillAvail = new Metric<>(metricId, down);
 
             // Trigger an AvailChange for the servers as going down with the agent
             // Only metrics whose name is equal to MIQEventUtils.SERVER_AVAILABILITY_NAME are of interest because
             //  these belong to a server
-            if (invMetric.getParent() instanceof org.hawkular.inventory.api.model.Resource.Blueprint &&
-                    invMetric.get().getName().equals(MIQEventUtils.SERVER_AVAILABILITY_NAME)) {
-                org.hawkular.inventory.api.model.Resource.Blueprint
-                        resource = (org.hawkular.inventory.api.model.Resource.Blueprint) invMetric.getParent();
-                CanonicalPath resourcePath = CanonicalPath.of()
-                        .tenant(key.getTenantId())
-                        .feed(key.getFeedId())
-                        .resource(resource.getId())
-                        .get();
-                miqEventUtils.handleResourceAvailChange(
-                        resourcePath.toString(),
-                        invMetric.get().getName(),
-                        AvailabilityType.DOWN.name());
-
+            if (availMetric.getMetric().getName().equals(MIQEventUtils.SERVER_AVAILABILITY_NAME)) {
+                miqEventUtils.handleResourceAvailChange(key.getFeedId(), availMetric.getResourceId(),
+                        availMetric.getMetric().getName(), AvailabilityType.DOWN.name());
             }
-            return backfillAvail;
-        });
+            availabilites.add(backfillAvail);
+        }
 
         // Set DOWN avail for the feed/tenant itself
         MetricId<AvailabilityType> metricId = new MetricId<>(key.getTenantId(), MetricType.AVAILABILITY,
                 key.getMetricId());
         Metric<AvailabilityType> backfillAvail = new Metric<>(metricId, down);
-        availabilities = availabilities.concatWith(Observable.just(backfillAvail));
+        availabilites.add(backfillAvail);
 
         // Push the avail to hwkmetrics
-        Observable<Void> observable = metricsService.addDataPoints(MetricType.AVAILABILITY, availabilities);
+        Observable<Void> observable = metricsService.addDataPoints(MetricType.AVAILABILITY, Observable.from(availabilites));
         observable.subscribe(new Subscriber<Void>() {
 
             @Override
@@ -462,11 +469,15 @@ public class BackfillCacheManager implements BackfillCache {
             if (metricsService == null) {
                 metricsService = (MetricsService) ctx.lookup(METRICS_SERVICE);
             }
+
+            if (inventoryService == null) {
+                inventoryService = (InventoryService) ctx.lookup(INVENTORY_SERVICE);
+            }
         } catch (Exception e) {
             log.errorf("Failed to access JNDI Services: %s", e.getMessage());
         }
 
-        return (null != metricsService);
+        return (null != metricsService && null != inventoryService);
     }
 
     private void cancelJob(CacheKey key) {
@@ -612,6 +623,32 @@ public class BackfillCacheManager implements BackfillCache {
         @Override
         public String toString() {
             return "CacheValue [lastUpdateTime=" + lastUpdateTime + ", maxQuietPeriodMs=" + maxQuietPeriodMs + "]";
+        }
+    }
+
+    public static class MetricResource {
+        private String resourceId;
+        private org.hawkular.inventory.model.Metric metric;
+
+        public MetricResource(String resourceId, org.hawkular.inventory.model.Metric metric) {
+            this.resourceId = resourceId;
+            this.metric = metric;
+        }
+
+        public String getResourceId() {
+            return resourceId;
+        }
+
+        public org.hawkular.inventory.model.Metric getMetric() {
+            return metric;
+        }
+
+        @Override
+        public String toString() {
+            return "MetricResource{" +
+                    "resourceId='" + resourceId + '\'' +
+                    ", metric=" + metric +
+                    '}';
         }
     }
 }

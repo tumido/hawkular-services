@@ -114,16 +114,17 @@ public class ApiHandler {
 
     private void handleResourceAdded(Notification notification) {
         String resourceType = getRequiredValue(notification, "resourceType");
-        String resourcePath = getRequiredValue(notification, "resourcePath");
-        miqEventUtils.handleResourceAdded(resourceType, resourcePath);
+        String feedId = getRequiredValue(notification, "feedId");
+        String resourceId = getRequiredValue(notification, "resourceId");
+        miqEventUtils.handleResourceAdded(resourceType, feedId, resourceId);
     }
 
     private void handleAvailChanged(Notification notification) {
-        String resourceType = getRequiredValue(notification, "resourceType");
-        String resourcePath = getRequiredValue(notification, "resourcePath");
+        String feedId = getRequiredValue(notification, "feedId");
+        String resourceId = getRequiredValue(notification, "resourceId");
         String availType = getRequiredValue(notification, "availType");
         String newAvail = getRequiredValue(notification, "newAvail");
-        miqEventUtils.handleResourceAvailChange(resourcePath, availType, newAvail);
+        miqEventUtils.handleResourceAvailChange(feedId, resourceId, availType, newAvail);
     }
 
     private String getRequiredValue(Notification notification, String key) {
