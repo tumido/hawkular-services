@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Red Hat, Inc. and/or its affiliates
+ * Copyright 2016-2017 Red Hat, Inc. and/or its affiliates
  * and other contributors as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-import org.hawkular.inventory.json.InventoryJacksonConfig;
 import org.jboss.arquillian.testng.Arquillian;
 import org.testng.annotations.BeforeMethod;
 
@@ -78,7 +77,6 @@ public class AbstractTestBase extends Arquillian {
         AnnotationIntrospector jaxbIntrospector = new JaxbAnnotationIntrospector(mapper.getTypeFactory());
         AnnotationIntrospector introspectorPair = new AnnotationIntrospectorPair(jacksonIntrospector, jaxbIntrospector);
         mapper.setAnnotationIntrospector(introspectorPair);
-        InventoryJacksonConfig.configure(mapper);
 
     }
 

@@ -25,7 +25,7 @@ import javax.jms.MessageListener;
 import org.hawkular.bus.common.BasicMessage;
 import org.hawkular.bus.common.consumer.BasicMessageListener;
 import org.hawkular.cmdgw.api.EventDestination;
-import org.hawkular.cmdgw.api.ResourcePathResponse;
+import org.hawkular.cmdgw.api.ResourceResponse;
 import org.jboss.logging.Logger;
 
 /**
@@ -79,10 +79,10 @@ public class CommandEventListener extends BasicMessageListener<BasicMessage> {
             }
         }
         if (null != miqEventType) {
-            ResourcePathResponse response = (ResourcePathResponse) msg;
+            ResourceResponse response = (ResourceResponse) msg;
             String text = response.getStatus().name().toLowerCase();
             boolean isError = "error".equals(text);
-            utils.addEvent(response.getResourcePath(), messageClass, text,
+            utils.addEvent(response.getFeedId(), response.getResourceId(), messageClass, text,
                     (miqEventType + (isError ? ".error" : ".ok")), miqResourceType, response.getMessage());
         }
 
