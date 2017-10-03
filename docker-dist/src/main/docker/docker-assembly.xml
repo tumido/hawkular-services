@@ -50,17 +50,17 @@
   <files>
     <file>
       <source>src/main/resources/startcmd.sh</source>
-      <outputDirectory>/opt/hawkular/bin</outputDirectory>
+      <outputDirectory>${docker.hawkular_home}/bin</outputDirectory>
       <fileMode>755</fileMode>
     </file>
     <file>
       <source>src/main/resources/ready.sh</source>
-      <outputDirectory>/opt/hawkular/bin</outputDirectory>
+      <outputDirectory>${docker.hawkular_home}/bin</outputDirectory>
       <fileMode>755</fileMode>
     </file>
     <file>
       <source>src/main/resources/cert_utils.sh</source>
-      <outputDirectory>/opt/hawkular/bin</outputDirectory>
+      <outputDirectory>${docker.hawkular_home}/bin</outputDirectory>
       <fileMode>755</fileMode>
     </file>
     <file>

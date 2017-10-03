@@ -30,12 +30,13 @@
   <packaging>pom</packaging>
 
   <properties>
-    <docker-plugin.project.version>0.15.8</docker-plugin.project.version>
+    <docker-plugin.project.version>0.21.0</docker-plugin.project.version>
     <docker.base-image>jboss/wildfly:10.0.0.Final</docker.base-image>
     <docker.tag.prefix />
     <docker.tag.version>${project.version}</docker.tag.version>
     <docker.java.opts>-Xms64m -Xmx512m -XX:MetaspaceSize=96M -XX:MaxMetaspaceSize=256m -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=$JBOSS_MODULES_SYSTEM_PKGS -Djava.awt.headless=true -agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=n</docker.java.opts>
-    <docker.jboss_home>/opt/jboss/wildfly</docker.jboss_home>
+    <docker.jboss_home>opt/jboss/wildfly</docker.jboss_home>
+    <docker.hawkular_home>opt/hawkular</docker.hawkular_home>
     <plexus-utils.version>3.0.15</plexus-utils.version>
     <alpn-boot.version>8.1.7.v20160121</alpn-boot.version>
     <version.cassandra>3.0.9</version.cassandra>
@@ -95,18 +96,6 @@
         <artifactId>docker-maven-plugin</artifactId>
         <version>${docker-plugin.project.version}</version>
         <extensions>true</extensions> <!-- enables using 'docker' packaging above -->
-        <dependencies>
-          <dependency>
-            <groupId>org.codehaus.plexus</groupId>
-            <artifactId>plexus-utils</artifactId>
-            <version>${plexus-utils.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>19.0</version>
-          </dependency>
-        </dependencies>
         <configuration>
           <watchInterval>500</watchInterval>
           <logDate>default</logDate>
@@ -129,7 +118,6 @@
                   <tag>${docker.tag.prefix}${docker.tag.version}</tag>
                 </tags>
                 <assembly>
-                  <basedir>/</basedir>
                   <descriptor>docker-assembly.xml</descriptor>
                 </assembly>
               </build>
