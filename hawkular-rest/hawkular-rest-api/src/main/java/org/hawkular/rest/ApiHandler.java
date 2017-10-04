@@ -98,17 +98,12 @@ public class ApiHandler {
                     break;
                 default:
                     return ResponseUtil.badRequest("Unhandled Notification Type: " + notification.getType());
-
             }
 
             return ResponseUtil.ok(null);
 
         } catch (Exception e) {
-            log.debug(e.getMessage(), e);
-            if (e.getCause() != null && e.getCause() instanceof IllegalArgumentException) {
-                return ResponseUtil.badRequest("Bad arguments: " + e.getMessage());
-            }
-            return ResponseUtil.internalError(e.getMessage());
+            return ResponseUtil.onException(e, log);
         }
     }
 

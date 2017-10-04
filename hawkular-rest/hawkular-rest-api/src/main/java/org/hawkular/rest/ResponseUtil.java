@@ -21,6 +21,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import javax.ws.rs.core.Response;
 
 import org.hawkular.rest.json.ApiError;
+import org.jboss.logging.Logger;
 
 /**
  * @author Lukas Krejci
@@ -46,5 +47,18 @@ final class ResponseUtil {
     public static Response badRequest(String message) {
         return Response.status(Response.Status.BAD_REQUEST)
                 .entity(new ApiError(message)).type(APPLICATION_JSON_TYPE).build();
+    }
+
+    public static Response onException(Exception e, Logger log) {
+        if (e instanceof IllegalArgumentException) {
+            return badRequest(e.getMessage());
+        }
+        if (null != e.getCause() && e.getCause() instanceof IllegalArgumentException) {
+            return badRequest(e.getCause().getMessage());
+        }
+        if (null != log) {
+            log.debug(e.getMessage(), e);
+        }
+        return internalError(e.getMessage());
     }
 }
