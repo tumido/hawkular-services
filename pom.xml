@@ -69,7 +69,8 @@
 
   <properties>
     <version.javaee.spec>7.0</version.javaee.spec>
-    <version.org.hawkular.agent>1.0.1.Final</version.org.hawkular.agent>
+    <version.org.hawkular.agent.old>1.0.1.Final</version.org.hawkular.agent.old>
+    <version.org.hawkular.agent>2.0.0.Alpha1-SRC-revision-491c164c7f5730f0e08225d14add472829ab27a3</version.org.hawkular.agent>
     <!-- The Alerting version must correspond to the version packaged with Metrics! -->
     <version.org.hawkular.alerts>1.6.3.Final</version.org.hawkular.alerts>
     <version.org.hawkular.commons>0.9.8.Final-SRC-revision-c62d7631b3d411efc98dc7c1c9a92ef15cc553b1</version.org.hawkular.commons>
@@ -100,28 +101,28 @@
       <dependency>
         <groupId>org.hawkular.agent</groupId>
         <artifactId>hawkular-wildfly-agent-download</artifactId>
-        <version>${version.org.hawkular.agent}</version>
+        <version>${version.org.hawkular.agent.old}</version>
         <type>war</type>
       </dependency>
 
       <dependency>
         <groupId>org.hawkular.agent</groupId>
         <artifactId>hawkular-wildfly-agent-wf-extension</artifactId>
-        <version>${version.org.hawkular.agent}</version>
+        <version>${version.org.hawkular.agent.old}</version>
         <type>zip</type>
       </dependency>
 
       <dependency>
         <groupId>org.hawkular.agent</groupId>
         <artifactId>hawkular-wildfly-agent-wf-extension-eap6</artifactId>
-        <version>${version.org.hawkular.agent}</version>
+        <version>${version.org.hawkular.agent.old}</version>
         <type>zip</type>
       </dependency>
 
       <dependency>
         <groupId>org.hawkular.agent</groupId>
         <artifactId>hawkular-wildfly-agent-installer</artifactId>
-        <version>${version.org.hawkular.agent}</version>
+        <version>${version.org.hawkular.agent.old}</version>
       </dependency>
 
       <dependency>
