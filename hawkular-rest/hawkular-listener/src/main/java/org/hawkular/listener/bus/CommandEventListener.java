@@ -58,6 +58,10 @@ public class CommandEventListener extends BasicMessageListener<BasicMessage> {
                 miqEventType = "hawkular_datasource";
                 miqResourceType = "MiddlewareServer";
                 break;
+            case "AddJdbcDriverResponse":
+                miqEventType = "hawkular_jdbc";
+                miqResourceType = "MiddlewareServer";
+                break;
             case "DeployApplicationResponse":
                 miqEventType = "hawkular_deployment";
                 miqResourceType = "MiddlewareServer";
@@ -66,21 +70,14 @@ public class CommandEventListener extends BasicMessageListener<BasicMessage> {
                 miqEventType = "hawkular_datasource_remove";
                 miqResourceType = "MiddlewareServer";
                 break;
-            case "UndeployApplicationResponse": {
-                miqEventType = "hawkular_deployment_remove";
-                miqResourceType = "MiddlewareServer";
-                break;
-            }
-            case "AddJdbcDriverResponse": {
-                miqEventType = "hawkular_jdbc";
-                miqResourceType = "MiddlewareServer";
-                break;
-            }
-            case "RemoveJdbcDriverResponse": {
+            case "RemoveJdbcDriverResponse":
                 miqEventType = "hawkular_jdbc_remove";
                 miqResourceType = "MiddlewareServer";
                 break;
-            }
+            case "UndeployApplicationResponse":
+                miqEventType = "hawkular_deployment_remove";
+                miqResourceType = "MiddlewareServer";
+                break;
             default: {
                 // other EventDestination messages are expected but not currently interesting
                 if (!(msg instanceof EventDestination)) {
