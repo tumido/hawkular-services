@@ -41,8 +41,7 @@ import javax.naming.InitialContext;
 
 import org.hawkular.inventory.api.InventoryService;
 import org.hawkular.inventory.api.ResourceFilter;
-import org.hawkular.inventory.api.ResourceWithType;
-import org.hawkular.inventory.api.ResultSet;
+import org.hawkular.inventory.api.model.ResultSet;
 import org.hawkular.listener.MIQEventUtils;
 import org.hawkular.metrics.core.service.MetricsService;
 import org.hawkular.metrics.model.AvailabilityType;
@@ -373,15 +372,15 @@ public class BackfillCacheManager implements BackfillCache {
 
     private List<MetricResource> getAvailMetricsForFeed(String feedId) {
         ResourceFilter filter = ResourceFilter.forFeed(feedId).build();
-        ResultSet<ResourceWithType> rs = inventoryService.getResources(filter);
+        ResultSet<org.hawkular.inventory.api.model.Resource> rs = inventoryService.getResources(filter);
         long resultSetSize = rs.getResultSize();
         long startOffset = rs.getStartOffset();
         long rsSize;
         int maxResults = 100;
         List<MetricResource> availMetrics = new ArrayList<>();
         do {
-            for (ResourceWithType resource : rs.getResults()) {
-                for (org.hawkular.inventory.model.Metric metric : resource.getMetrics()) {
+            for (org.hawkular.inventory.api.model.Resource resource : rs.getResults()) {
+                for (org.hawkular.inventory.api.model.Metric metric : resource.getMetrics()) {
                     if (metric.getType().equals(MetricType.AVAILABILITY.getText())) {
                         availMetrics.add(new MetricResource(resource.getId(), metric));
                     }
@@ -628,9 +627,9 @@ public class BackfillCacheManager implements BackfillCache {
 
     public static class MetricResource {
         private String resourceId;
-        private org.hawkular.inventory.model.Metric metric;
+        private org.hawkular.inventory.api.model.Metric metric;
 
-        public MetricResource(String resourceId, org.hawkular.inventory.model.Metric metric) {
+        public MetricResource(String resourceId, org.hawkular.inventory.api.model.Metric metric) {
             this.resourceId = resourceId;
             this.metric = metric;
         }
@@ -639,7 +638,7 @@ public class BackfillCacheManager implements BackfillCache {
             return resourceId;
         }
 
-        public org.hawkular.inventory.model.Metric getMetric() {
+        public org.hawkular.inventory.api.model.Metric getMetric() {
             return metric;
         }
 

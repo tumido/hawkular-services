@@ -64,12 +64,6 @@
 
       <dependency>
         <groupId>org.hawkular.commons</groupId>
-        <artifactId>hawkular-inventory-model</artifactId>
-        <version>${version.org.hawkular.commons}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.hawkular.commons</groupId>
         <artifactId>hawkular-inventory-service</artifactId>
         <version>${version.org.hawkular.commons}</version>
       </dependency>

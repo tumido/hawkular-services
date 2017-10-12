@@ -52,9 +52,9 @@ public class AgentITest extends AbstractTestBase {
     @Test(dependsOnGroups = { EchoCommandITest.GROUP, AlertingITest.GROUP, MetricsITest.GROUP })
     @RunAsClient
     public void agentCollectingMetrics() throws Throwable {
-        final String wfHeapMetricId = "MI~R~[" + testFeedId + "/Local~~]~MT~WildFly Memory Metrics~Heap Used";
-
+        final String wfHeapMetricId = "MI~R~[" + testFeedId + "/" + testFeedId + "~Local~~]~MT~WildFly Memory Metrics~Heap Used";
         /* This low level HttpUrl building is needed because wfHeapMetricId contains slashes */
+
         HttpUrl url = new HttpUrl.Builder()
                 .scheme(httpScheme).host(host).port(httpPort)
                 .encodedPath(MetricsITest.metricsPath)
@@ -80,7 +80,7 @@ public class AgentITest extends AbstractTestBase {
                                         "[%s] should have returned a json array with size >= 1, while it returned [%s]",
                                         testResponse.getRequest(), foundDataPoints));
                             });
-                }, Retry.times(500).delay(100));
+                }, Retry.times(100).delay(500));
     }
 
     /**
