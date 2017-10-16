@@ -80,7 +80,7 @@ echo "Hawkular Home is: ${HAWKULAR_HOME}"
 "${HAWKULAR_HOME}/bin/standalone.sh" -Dhawkular.rest.user="${HAWKULAR_USERNAME}" -Dhawkular.rest.password="${HAWKULAR_PASSWORD} -Dhawkular.agent.enabled=true"
 ```
 
-= Building
+== Building and Releasing
 
 Hawkular Services uses a standard Maven build.
 
@@ -90,4 +90,23 @@ The fabric8 docker maven plugin is used to build the docker container.
 
     cd docker-dist
     mvn docker:build
+
+For more information about the Docker container, see
+link:docker-dist/README.adoc[docker-dist/README.adoc]
+
+Continuous Integration builds are performed for each newly merged commit via
+the https://jenkins.torii.gva.redhat.com/job/hawkular-services/[Torii Jenkins
+server]
+
+=== Release Process
+
+The release process requires an account on the
+https://jenkins.torii.gva.redhat.com/job/hawkular-services/[Torii Jenkins
+server] Once logged in, the option "Perform Maven Release" will become
+available. Select this option, make any changes to the relesae settings if
+necessary, and then select "Schedule Maven Release Build".  This will run a
+`mvn release:prepare release:perform`, which builds the project and releases
+the artifacts to the JBoss.org Nexus Maven repository.  The job also triggers
+some post-release tasks, such as creating a GitHub release with the appropriate
+assets.
 
