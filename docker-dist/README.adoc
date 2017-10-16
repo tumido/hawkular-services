@@ -5,35 +5,40 @@ image:https://images.microbadger.com/badges/version/hawkular/hawkular-services.s
 image:https://images.microbadger.com/badges/image/hawkular/hawkular-services.svg["Layers and Size Info",link="https://microbadger.com/images/hawkular/hawkular-services"]
 endif::[]
 
-This module contains the sources to build a Docker container with Hawkular Services.
+This module contains the sources to build a Docker container with Hawkular
+Services.  Recent builds of the hawkular services container are available
+on https://hub.docker.com/r/hawkular/hawkular-services/[Docker Hub]
 
 == Cassandra
 
-Hawkular Services requires a running Cassandra instance with RPC enabled.  If you don't have an existing
-Cassandra instance, you can start one using Docker.
+Hawkular Services requires a running Cassandra instance with RPC enabled.  If
+you don't have an existing Cassandra instance, you can start one using Docker.
 
-  docker run --name hawkular-cassandra -e CASSANDRA_START_RPC=true -d cassandra:3.0.9
+  docker run --name hawkular-cassandra -e CASSANDRA_START_RPC=true -d cassandra:3.0.14
 
-This command should return the id of the running container.  You can also verify that it is running
-by using the "docker ps" command.
+This command should return the id of the running container.  You can also
+verify that it is running by using the "docker ps" command.
 
   docker ps
 
 == Building Hawkular Services
 
-The docker-maven-plugin can be used to create a Dockerfile, and add the docker image to the local registry.
+The docker-maven-plugin can be used to create a Dockerfile, and add the docker
+image to the local registry.
 
   mvn docker:build
 
-By default, this will create a docker image with the name "<username>/hawkular-services".
+By default, this will create a docker image with the name
+"<username>/hawkular-services".
 
   docker images
 
 == Running Hawkular Services
 
-Next, start up the hawkular services container and point it to the Cassandra instance.
+Next, start up the hawkular services container and point it to the Cassandra
+instance.
 
-  docker run --link=hawkular-cassandra -e CASSANDRA_NODES=hawkular-cassandra -p 8080:8080 `whoami`/hawkular-services
+  docker run --link=hawkular-cassandra -e CASSANDRA_NODES=hawkular-cassandra -p8080:8080 `whoami`/hawkular-services
 
 TIP: If you want to use Hawkular Services with SSL try this command:
 
