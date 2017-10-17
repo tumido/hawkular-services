@@ -5,8 +5,113 @@ ifdef::env-github[]
 image:https://travis-ci.org/hawkular/hawkular-services.svg?branch=master["Build Status", link="https://travis-ci.org/hawkular/hawkular-services"]
 endif::[]
 
-Hawkular Services is the main distribution for base level Hawkular components, such as Metrics, Alerts and Inventory.
+Hawkular Services is the main distribution for base level Hawkular components,
+such as Metrics, Alerts and Inventory.
 
 == License
 
-Hawkular is released under Apache License, Version 2.0 as described in the link:LICENSE[LICENSE] document
+Hawkular is released under Apache License, Version 2.0 as described in the
+link:LICENSE[LICENSE] document
+
+
+== Getting Started
+
+To get started with Hawkular Services, you'll need to download the latest
+distribution (or build one), unzip, create a user and set the Agent to use this
+password.
+
+You'll also need a Cassandra server up and running. Please, refer to Cassandra's
+official instructions on how to set it up. NOTE: If you build your own Hawkular
+Services distribution, you do not need to install and run Cassandra yourself if
+you build with the -Pembeddedc Maven profile, which deploys an embedded
+Cassandra node within the Hawkular Services server itself.
+
+The following script shows how to accomplish all those steps. Please, don't use
+this script to setup a production instance, as it has several flaws (like
+catching error conditions, insecure password setting, ...).
+
+```
+#!/bin/bash
+
+export HAWKULAR_RELEASE="0.39.0.Final"
+export HAWKULAR_USERNAME="jdoe"
+export HAWKULAR_PASSWORD="password" ## on production systems, you'd want to better protect the password
+#export CASSANDRA_NODES=localhost ## set this variable to the location of cassandra
+
+export HAWKULAR_BASEDIR="/opt/hawkular-services"
+export HAWKULAR_HOME="${HAWKULAR_BASEDIR}/hawkular-services-dist-${HAWKULAR_RELEASE}"
+export HAWKULAR_DIST="hawkular-services-dist-${HAWKULAR_RELEASE}.zip"
+export HAWKULAR_SHASUM="hawkular-services-dist-${HAWKULAR_RELEASE}.zip.sha1"
+
+if [ ! -d "${HAWKULAR_BASEDIR}" ] ; then
+  mkdir -p "${HAWKULAR_BASEDIR}"
+  if [ $? -ne 0 ]; then
+    echo "Unable to create HAWKULAR_BASEDIR: ${HAWKULAR_BASEDIR}"
+    exit 1
+  fi
+fi
+cd "${HAWKULAR_BASEDIR}"
+
+if [ -f "${HAWKULAR_DIST}" ] ; then
+  echo "Using existing distribution"
+else
+  wget "http://central.maven.org/maven2/org/hawkular/services/hawkular-services-dist/${HAWKULAR_RELEASE}/${HAWKULAR_DIST}"
+fi
+
+if [ ! -f "${HAWKULAR_SHASUM}" ] ; then
+  wget "http://central.maven.org/maven2/org/hawkular/services/hawkular-services-dist/${HAWKULAR_RELEASE}/${HAWKULAR_SHASUM}"
+fi
+
+export EXPECTED_SUM=`cat ${HAWKULAR_SHASUM}`
+export ACTUAL_SUM=`sha1sum ${HAWKULAR_DIST} | awk '{print $1}'`
+
+if [ "${EXPECTED_SUM}" != "${ACTUAL_SUM}" ] ; then
+  echo "Something is wrong. The checksum is not a match. Expected sum: ${EXPECTED_SUM}, actual sum is ${ACTUAL_SUM}"
+fi
+
+if [ -d "${HAWKULAR_HOME}" ] ; then
+  echo "Existing Hawkular found at ${HAWKULAR_HOME}. Moving it to ${HAWKULAR_HOME}.bkp"
+  mv "${HAWKULAR_HOME}" "${HAWKULAR_HOME}.bkp"
+fi
+unzip -q "hawkular-services-dist-${HAWKULAR_RELEASE}.zip"
+
+cd "${HAWKULAR_HOME}"
+echo "Hawkular Home is: ${HAWKULAR_HOME}"
+"${HAWKULAR_HOME}/bin/add-user.sh" \
+  -a \
+  -u "${HAWKULAR_USERNAME}" \
+  -p "${HAWKULAR_PASSWORD}" \
+  -g read-write,read-only
+"${HAWKULAR_HOME}/bin/standalone.sh" -Dhawkular.rest.user="${HAWKULAR_USERNAME}" -Dhawkular.rest.password="${HAWKULAR_PASSWORD} -Dhawkular.agent.enabled=true"
+```
+
+== Building and Releasing
+
+Hawkular Services uses a standard Maven build.
+
+    mvn install
+
+The fabric8 docker maven plugin is used to build the docker container.
+
+    cd docker-dist
+    mvn docker:build
+
+For more information about the Docker container, see
+link:docker-dist/README.adoc[docker-dist/README.adoc]
+
+Continuous Integration builds are performed for each newly merged commit via
+the https://jenkins.torii.gva.redhat.com/job/hawkular-services/[Torii Jenkins
+server]
+
+=== Release Process
+
+The release process requires an account on the
+https://jenkins.torii.gva.redhat.com/job/hawkular-services/[Torii Jenkins
+server] Once logged in, the option "Perform Maven Release" will become
+available. Select this option, make any changes to the relesae settings if
+necessary, and then select "Schedule Maven Release Build".  This will run a
+`mvn release:prepare release:perform`, which builds the project and releases
+the artifacts to the JBoss.org Nexus Maven repository.  The job also triggers
+some post-release tasks, such as creating a GitHub release with the appropriate
+assets.
+
