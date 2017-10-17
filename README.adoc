@@ -33,9 +33,10 @@ catching error conditions, insecure password setting, ...).
 ```
 #!/bin/bash
 
-export HAWKULAR_RELEASE="0.0.2.Final"
+export HAWKULAR_RELEASE="0.39.0.Final"
 export HAWKULAR_USERNAME="jdoe"
 export HAWKULAR_PASSWORD="password" ## on production systems, you'd want to better protect the password
+#export CASSANDRA_NODES=localhost ## set this variable to the location of cassandra
 
 export HAWKULAR_BASEDIR="/opt/hawkular-services"
 export HAWKULAR_HOME="${HAWKULAR_BASEDIR}/hawkular-services-dist-${HAWKULAR_RELEASE}"
@@ -44,6 +45,10 @@ export HAWKULAR_SHASUM="hawkular-services-dist-${HAWKULAR_RELEASE}.zip.sha1"
 
 if [ ! -d "${HAWKULAR_BASEDIR}" ] ; then
   mkdir -p "${HAWKULAR_BASEDIR}"
+  if [ $? -ne 0 ]; then
+    echo "Unable to create HAWKULAR_BASEDIR: ${HAWKULAR_BASEDIR}"
+    exit 1
+  fi
 fi
 cd "${HAWKULAR_BASEDIR}"
 
@@ -54,7 +59,7 @@ else
 fi
 
 if [ ! -f "${HAWKULAR_SHASUM}" ] ; then
-  wget "https://repository.jboss.org/nexus/content/groups/public/org/hawkular/services/hawkular-services-dist/${HAWKULAR_RELEASE}/${HAWKULAR_SHASUM}"
+  wget "http://central.maven.org/maven2/org/hawkular/services/hawkular-services-dist/${HAWKULAR_RELEASE}/${HAWKULAR_SHASUM}"
 fi
 
 export EXPECTED_SUM=`cat ${HAWKULAR_SHASUM}`
