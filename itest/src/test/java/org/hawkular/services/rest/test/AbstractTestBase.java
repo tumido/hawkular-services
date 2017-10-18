@@ -81,23 +81,28 @@ public class AbstractTestBase extends Arquillian {
     }
 
     public static TestClient newClient(String tenantId) {
-        final Map<String, String> defaultHeaders = Collections.unmodifiableMap(new HashMap<String, String>(){/**  */
-            private static final long serialVersionUID = 1L;
-        {
-            put("Authorization", authHeader);
-            put("Accept", "application/json");
-            put("Hawkular-Tenant", tenantId);
-        }});
-        return new TestClient(client, mapper, baseUri, defaultHeaders);
+        return newClient(tenantId, true);
+    }
+
+    public static TestClient newClient(String tenantId, boolean auth) {
+        Map<String, String> defaultHeaders = new HashMap<>();
+        defaultHeaders.put("Accept", "application/json");
+        defaultHeaders.put("Hawkular-Tenant", tenantId);
+        if (auth) {
+            defaultHeaders.put("Authorization", authHeader);
+        }
+        return new TestClient(client, mapper, baseUri, Collections.unmodifiableMap(defaultHeaders));
     }
 
 
     protected TestClient testClient;
+    protected TestClient noAuthClient;
 
     @BeforeMethod
     public void beforeTest(Method method) {
         String tenantId = method.getDeclaringClass().getSimpleName() + "." + method.getName() + "." + random.nextInt();
         this.testClient = newClient(tenantId);
+        this.noAuthClient = newClient(tenantId, false);
     }
 
 }

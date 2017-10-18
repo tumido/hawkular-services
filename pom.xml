@@ -50,7 +50,7 @@
   <modules>
     <module>hawkular-rest</module>
     <module>dist</module>
-    <module>feature-pack</module>
+    <module>feature-pack-parent</module>
     <module>itest</module>
     <module>hawkular-status</module>
     <module>docker-dist</module>
