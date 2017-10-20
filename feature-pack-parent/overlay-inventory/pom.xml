@@ -47,21 +47,47 @@
   <build>
     <finalName>hawkular-inventory-service</finalName>
     <plugins>
+      <!-- We want to maintain the original inventory war manifest in the new overlay war because we want the
+           /status endpoint to reflect the inventory/commons version and hash, not the services version.  So,
+           first extract it and then apply it to the new war  -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>extract-manifest</id>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.hawkular.commons</groupId>
+                  <artifactId>hawkular-inventory-service</artifactId>
+                  <version>${version.org.hawkular.commons}</version>
+                  <type>war</type>
+                  <overWrite>true</overWrite>
+                  <outputDirectory>${project.build.directory}</outputDirectory>
+                  <includes>META-INF/MANIFEST.MF</includes>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
       <plugin>
         <artifactId>maven-war-plugin</artifactId>
         <configuration>
-          <archive>
-            <manifest>
-              <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-            </manifest>
-          </archive>
           <overlays>
             <overlay>
               <groupId>org.hawkular.commons</groupId>
               <artifactId>hawkular-inventory-service</artifactId>
             </overlay>
           </overlays>
+          <archive>
+            <manifestFile>${project.build.directory}/META-INF/MANIFEST.MF</manifestFile>
+          </archive>
         </configuration>
       </plugin>
     </plugins>

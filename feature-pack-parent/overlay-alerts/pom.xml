@@ -47,6 +47,35 @@
   <build>
     <finalName>hawkular-services-alerts</finalName>
     <plugins>
+      <!-- We want to maintain the original alerts war manifest in the new overlay war because we want the
+           /status endpoint to reflect the standalone alerts version and hash, not the services version.  So,
+           first extract it and then apply it to the new war  -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>extract-manifest</id>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.hawkular.alerts</groupId>
+                  <artifactId>hawkular-alerts-rest</artifactId>
+                  <version>${version.org.hawkular.alerts}</version>
+                  <type>war</type>
+                  <overWrite>true</overWrite>
+                  <outputDirectory>${project.build.directory}</outputDirectory>
+                  <includes>META-INF/MANIFEST.MF</includes>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
       <plugin>
         <artifactId>maven-war-plugin</artifactId>
         <configuration>
@@ -62,6 +91,9 @@
               <artifactId>hawkular-alerts-rest</artifactId>
             </overlay>
           </overlays>
+          <archive>
+            <manifestFile>${project.build.directory}/META-INF/MANIFEST.MF</manifestFile>
+          </archive>
         </configuration>
       </plugin>
     </plugins>
