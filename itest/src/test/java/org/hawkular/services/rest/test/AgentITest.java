@@ -35,8 +35,8 @@ import okhttp3.HttpUrl;
  */
 public class AgentITest extends AbstractTestBase {
     private static final Logger log = Logger.getLogger(AgentITest.class);
-    /** The {@code tenantId} used by the Agent we test */
-    private static final String testTenantId = System.getProperty("hawkular.itest.rest.tenantId");
+    /** Agent does not use tenant, just use a dummy tenant for interactions with alerts */
+    private static final String testTenantId = "hawkular";
     /** The {@code feedId} used by the Agent we test */
     private static final String testFeedId = System.getProperty("hawkular.itest.rest.feedId");
 

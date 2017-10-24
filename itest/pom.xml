@@ -207,7 +207,6 @@
 
         <hawkular.agent.itest.mgmt.user>itest-admin</hawkular.agent.itest.mgmt.user>
         <!-- <hawkular.agent.itest.mgmt.password> set to a random value using gmaven plugin </hawkular.agent.itest.mgmt.password> -->
-        <hawkular.itest.rest.tenantId>itest-rest-tenant</hawkular.itest.rest.tenantId>
         <hawkular.itest.rest.user>itest-rest</hawkular.itest.rest.user>
         <!-- <hawkular.itest.rest.password> set to a random value using gmaven plugin </hawkular.itest.rest.password> -->
         <hawkular.itest.rest.feedId>itest-feed</hawkular.itest.rest.feedId>
@@ -418,7 +417,6 @@
                     -Djboss.bind.address=${hawkular.bind.address}
                     -Djboss.socket.binding.port-offset=${hawkular.port.offset}
                     -Dhawkular.agent.enabled=${hawkular.agent.enabled}
-                    -Dhawkular.rest.tenantId=${hawkular.itest.rest.tenantId}
                     -Dhawkular.rest.feedId=${hawkular.itest.rest.feedId}
                     -Dhawkular.rest.user=${hawkular.itest.rest.user}
                     -Dhawkular.rest.password=${hawkular.itest.rest.password}
@@ -444,7 +442,6 @@
                 <hawkular.agent.itest.mgmt.user>${hawkular.agent.itest.mgmt.user}</hawkular.agent.itest.mgmt.user>
                 <hawkular.agent.itest.mgmt.password>${hawkular.agent.itest.mgmt.password}</hawkular.agent.itest.mgmt.password>
 
-                <hawkular.itest.rest.tenantId>${hawkular.itest.rest.tenantId}</hawkular.itest.rest.tenantId>
                 <hawkular.itest.rest.feedId>${hawkular.itest.rest.feedId}</hawkular.itest.rest.feedId>
                 <hawkular.itest.rest.user>${hawkular.itest.rest.user}</hawkular.itest.rest.user>
                 <hawkular.itest.rest.password>${hawkular.itest.rest.password}</hawkular.itest.rest.password>
