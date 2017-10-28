@@ -24,7 +24,7 @@
   <parent>
     <groupId>org.hawkular.services</groupId>
     <artifactId>hawkular-services-feature-pack-parent</artifactId>
-    <version>0.40.1.Final-SNAPSHOT</version>
+    <version>1.0.0.Final-SNAPSHOT</version>
   </parent>
 
   <artifactId>hawkular-inventory-service</artifactId>
