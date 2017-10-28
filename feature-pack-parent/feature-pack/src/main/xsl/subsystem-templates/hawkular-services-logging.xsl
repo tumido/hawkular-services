@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright 2016 Red Hat, Inc. and/or its affiliates
+    Copyright 2016-2017 Red Hat, Inc. and/or its affiliates
     and other contributors as indicated by the @author tags.
 
     Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,9 +32,6 @@
       </logger>
       <logger category="org.hawkular.metrics">
         <level name="${{hawkular.log.metrics:INFO}}" />
-      </logger>
-      <logger category="org.hawkular.inventory">
-        <level name="${{hawkular.log.inventory:INFO}}" />
       </logger>
       <logger category="org.hawkular.inventory.rest.requests">
         <level name="${{hawkular.log.inventory.rest.requests:INFO}}" />

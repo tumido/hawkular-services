@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Red Hat, Inc. and/or its affiliates
+ * Copyright 2016-2017 Red Hat, Inc. and/or its affiliates
  * and other contributors as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-import org.hawkular.inventory.json.InventoryJacksonConfig;
 import org.jboss.arquillian.testng.Arquillian;
 import org.testng.annotations.BeforeMethod;
 
@@ -78,28 +77,32 @@ public class AbstractTestBase extends Arquillian {
         AnnotationIntrospector jaxbIntrospector = new JaxbAnnotationIntrospector(mapper.getTypeFactory());
         AnnotationIntrospector introspectorPair = new AnnotationIntrospectorPair(jacksonIntrospector, jaxbIntrospector);
         mapper.setAnnotationIntrospector(introspectorPair);
-        InventoryJacksonConfig.configure(mapper);
 
     }
 
     public static TestClient newClient(String tenantId) {
-        final Map<String, String> defaultHeaders = Collections.unmodifiableMap(new HashMap<String, String>(){/**  */
-            private static final long serialVersionUID = 1L;
-        {
-            put("Authorization", authHeader);
-            put("Accept", "application/json");
-            put("Hawkular-Tenant", tenantId);
-        }});
-        return new TestClient(client, mapper, baseUri, defaultHeaders);
+        return newClient(tenantId, true);
+    }
+
+    public static TestClient newClient(String tenantId, boolean auth) {
+        Map<String, String> defaultHeaders = new HashMap<>();
+        defaultHeaders.put("Accept", "application/json");
+        defaultHeaders.put("Hawkular-Tenant", tenantId);
+        if (auth) {
+            defaultHeaders.put("Authorization", authHeader);
+        }
+        return new TestClient(client, mapper, baseUri, Collections.unmodifiableMap(defaultHeaders));
     }
 
 
     protected TestClient testClient;
+    protected TestClient noAuthClient;
 
     @BeforeMethod
     public void beforeTest(Method method) {
         String tenantId = method.getDeclaringClass().getSimpleName() + "." + method.getName() + "." + random.nextInt();
         this.testClient = newClient(tenantId);
+        this.noAuthClient = newClient(tenantId, false);
     }
 
 }

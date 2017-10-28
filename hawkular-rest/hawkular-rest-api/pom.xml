@@ -23,11 +23,11 @@
   <parent>
     <groupId>org.hawkular.services</groupId>
     <artifactId>hawkular-api-parent</artifactId>
-    <version>0.40.1.Final-SNAPSHOT</version>
+    <version>1.0.0.Final-SNAPSHOT</version>
   </parent>
 
   <artifactId>hawkular-rest-api</artifactId>
-  <version>0.40.1.Final-SNAPSHOT</version>
+  <version>1.0.0.Final-SNAPSHOT</version>
   <packaging>war</packaging>
 
   <name>Hawkular REST: REST API Web Application</name>
@@ -47,28 +47,13 @@
 
     <dependency>
       <groupId>org.hawkular.commons</groupId>
-      <artifactId>hawkular-inventory-paths</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.hawkular.commons</groupId>
-      <artifactId>hawkular-inventory-api</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.hawkular.commons</groupId>
-      <artifactId>hawkular-inventory-json-helper</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.hawkular.commons</groupId>
       <artifactId>hawkular-cors-jaxrs-filter</artifactId>
     </dependency>
 
     <dependency>
       <groupId>org.hawkular.services</groupId>
       <artifactId>hawkular-listener</artifactId>
-      <version>0.40.1.Final-SNAPSHOT</version>
+      <version>1.0.0.Final-SNAPSHOT</version>
     </dependency>
 
     <dependency>

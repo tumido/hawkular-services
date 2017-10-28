@@ -22,7 +22,6 @@ import java.util.Date;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -45,12 +44,7 @@ import io.swagger.annotations.ApiResponses;
 public class ApiHandler {
     private static final Logger log = Logger.getLogger(ApiHandler.class);
 
-    public static final String TENANT_HEADER_NAME = "Hawkular-Tenant";
-
     private final MIQEventUtils miqEventUtils = new MIQEventUtils();
-
-    @HeaderParam(TENANT_HEADER_NAME)
-    String tenantId;
 
     public ApiHandler() {
         log.debug("Creating Instance.");
@@ -98,32 +92,28 @@ public class ApiHandler {
                     break;
                 default:
                     return ResponseUtil.badRequest("Unhandled Notification Type: " + notification.getType());
-
             }
 
             return ResponseUtil.ok(null);
 
         } catch (Exception e) {
-            log.debug(e.getMessage(), e);
-            if (e.getCause() != null && e.getCause() instanceof IllegalArgumentException) {
-                return ResponseUtil.badRequest("Bad arguments: " + e.getMessage());
-            }
-            return ResponseUtil.internalError(e.getMessage());
+            return ResponseUtil.onException(e, log);
         }
     }
 
     private void handleResourceAdded(Notification notification) {
         String resourceType = getRequiredValue(notification, "resourceType");
-        String resourcePath = getRequiredValue(notification, "resourcePath");
-        miqEventUtils.handleResourceAdded(resourceType, resourcePath);
+        String feedId = getRequiredValue(notification, "feedId");
+        String resourceId = getRequiredValue(notification, "resourceId");
+        miqEventUtils.handleResourceAdded(resourceType, feedId, resourceId);
     }
 
     private void handleAvailChanged(Notification notification) {
-        String resourceType = getRequiredValue(notification, "resourceType");
-        String resourcePath = getRequiredValue(notification, "resourcePath");
+        String feedId = getRequiredValue(notification, "feedId");
+        String resourceId = getRequiredValue(notification, "resourceId");
         String availType = getRequiredValue(notification, "availType");
         String newAvail = getRequiredValue(notification, "newAvail");
-        miqEventUtils.handleResourceAvailChange(resourcePath, availType, newAvail);
+        miqEventUtils.handleResourceAvailChange(feedId, resourceId, availType, newAvail);
     }
 
     private String getRequiredValue(Notification notification, String key) {

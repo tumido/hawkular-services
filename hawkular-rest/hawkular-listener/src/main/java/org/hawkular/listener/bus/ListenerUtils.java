@@ -23,12 +23,14 @@ import javax.naming.InitialContext;
 
 import org.hawkular.alerts.api.model.event.Event;
 import org.hawkular.alerts.api.services.AlertsService;
-import org.hawkular.inventory.paths.CanonicalPath;
 import org.jboss.logging.Logger;
 
 public class ListenerUtils {
     private static final String ALERTS_SERVICE = "java:global/hawkular-metrics/hawkular-alerts/CassAlertsServiceImpl";
 
+    // TODO [lponce] let configure this, but new inventory won't deal with tenantId,
+    // TODO MiQ works with a default tenant 'hawkular' this is for compability with alerting multi-tenant feature
+    private static final String DEFAULT_TENANT = "hawkular";
     private final Logger log = Logger.getLogger(ListenerUtils.class);
 
     public InitialContext ctx;
@@ -38,36 +40,38 @@ public class ListenerUtils {
     }
 
     /**
-     * @param resourcePathStr resource canonical path string
+     * @param feedId the feed associated with the resource
+     * @param resourceId the ID of the resource
      * @param category the event category
      * @param text the event text
      * @param miqEventType the MIQ event type
      * @param miqResourceType the MIQ event resource type
      * @param miqMessage optional message for the MIQ event
      */
-    public void addEvent(String resourcePathStr, String category, String text, String miqEventType,
-            String miqResourceType, String miqMessage) {
-        addEvent(null, false, CanonicalPath.fromString(resourcePathStr), category, text, miqEventType, miqResourceType,
+    public void addEvent(String feedId, String resourceId, String category, String text, String miqEventType,
+                         String miqResourceType, String miqMessage) {
+        addEvent(null, false, feedId, resourceId, category, text, miqEventType, miqResourceType,
                 miqMessage);
     }
 
     /**
      * @param eventId if null will be a generated UUID
      * @param checkExists addEvent only if event with the provided eventId does not already exist
-     * @param resourcePath resource canonical path
+     * @param feedId the feed associated with the resource
+     * @param resourceId the ID of the resource
      * @param category the event category
      * @param text the event text
      * @param miqEventType the MIQ event type
      * @param miqResourceType the MIQ event resource type
      * @param miqMessage optional message for the MIQ event
      */
-    public void addEvent(String eventId, boolean checkExists, CanonicalPath resourcePath, String category, String text,
-            String miqEventType,
-            String miqResourceType, String miqMessage) {
+    public void addEvent(String eventId, boolean checkExists, String feedId, String resourceId, String category, String text,
+                         String miqEventType,
+                         String miqResourceType, String miqMessage) {
         try {
             init();
 
-            String tenantId = resourcePath.ids().getTenantId();
+            String tenantId = DEFAULT_TENANT;
             eventId = (null == eventId || eventId.isEmpty()) ? UUID.randomUUID().toString() : eventId;
 
             if (checkExists) {
@@ -77,7 +81,8 @@ public class ListenerUtils {
             }
 
             Event event = new Event(tenantId, eventId, category, text);
-            event.addContext("resource_path", resourcePath.toString());
+            event.addContext("feed_id", feedId);
+            event.addContext("resource_id", resourceId);
             event.addContext("message", miqMessage);
             event.addTag("miq.event_type", miqEventType);
             event.addTag("miq.resource_type", miqResourceType);

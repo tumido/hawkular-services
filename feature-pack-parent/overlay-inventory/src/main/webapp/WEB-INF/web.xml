@@ -17,25 +17,20 @@
     limitations under the License.
 
 -->
+<!-- This Overlay Adds The Security Required for Hawkular Services -->
+
 <web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
          version="3.1">
 
-  <display-name>Hawkular Rest interface</display-name>
-
-  <context-param>
-    <param-name>resteasy.media.type.mappings</param-name>
-    <param-value>html : text/html, json : application/json, xml : application/xml, csv : text/csv, txt: text/plain,
-      yaml: application/yaml, jsonw: application/vnd.rhq.wrapped+json
-    </param-value>
-  </context-param>
+  <display-name>Hawkular Inventory Service</display-name>
 
   <!-- Unsecured -->
   <security-constraint>
     <web-resource-collection>
-      <web-resource-name>Ping endpoint</web-resource-name>
-      <url-pattern>/ping</url-pattern>
+      <web-resource-name>Status endpoint</web-resource-name>
+      <url-pattern>/status</url-pattern>
     </web-resource-collection>
   </security-constraint>
 
@@ -61,4 +56,5 @@
   <security-role>
     <role-name>read-only</role-name>
   </security-role>
+
 </web-app>
