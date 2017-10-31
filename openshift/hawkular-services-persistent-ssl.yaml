@@ -160,7 +160,6 @@ objects:
             value: ${HAWKULAR_USER}
           - name: HAWKULAR_PASSWORD
             value: ${HAWKULAR_PASSWORD}
-          imagePullPolicy: IfNotPresent
           name: hawkular-services
           volumeMounts:
           - name: h-services-data
@@ -222,7 +221,6 @@ objects:
       spec:
         containers:
         - image: ${CASSANDRA_IMAGE}
-          imagePullPolicy: Always
           name: hawkular-cassandra
           env:
           - name: DATA_VOLUME
