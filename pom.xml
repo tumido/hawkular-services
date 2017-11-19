@@ -51,9 +51,7 @@
     <module>hawkular-rest</module>
     <module>dist</module>
     <module>feature-pack-parent</module>
-    <module>itest</module>
     <module>hawkular-status</module>
-    <module>docker-dist</module>
   </modules>
 
   <scm>
@@ -265,6 +263,7 @@
             <excludes combine.children="append">
               <exclude>openshift/cert-examples/**/*.pem</exclude>
               <exclude>openshift/cert-examples/**/*.key</exclude>
+              <exclude>docker-dist/.dockerignore</exclude>
             </excludes>
           </configuration>
         </plugin>
@@ -273,6 +272,20 @@
   </build>
 
   <profiles>
+    <profile>
+      <id>dist</id>
+      <activation>
+        <property>
+          <name>dist</name>
+          <value>true</value>
+        </property>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <modules>
+        <module>itest</module>
+        <module>docker-dist</module>
+      </modules>
+    </profile>
     <profile>
       <!-- A profile to build a development distro -->
       <id>dev</id>

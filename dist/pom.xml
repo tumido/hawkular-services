@@ -101,9 +101,6 @@
     <profile>
       <!-- A profile to build a development distro -->
       <id>dev</id>
-      <properties>
-        <dozip>false</dozip>
-      </properties>
 
       <build>
         <plugins>
@@ -144,10 +141,10 @@
       </build>
     </profile>
     <profile>
-      <id>dozip</id>
+      <id>dist</id>
       <activation>
         <property>
-          <name>dozip</name>
+          <name>dist</name>
           <value>true</value>
         </property>
         <activeByDefault>true</activeByDefault>
